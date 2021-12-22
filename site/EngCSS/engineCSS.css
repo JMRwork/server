@@ -1,0 +1,56 @@
+* {
+    color: #ffffff;
+    background-color: #333333;
+    font-family: monospace;
+    padding:0rem;
+    margin:0rem;
+    box-sizing: border-box;
+}
+.ads{
+    padding: 0rem;
+    margin: 0rem;
+    background-color: crimson;
+}
+.logo {
+    background-color: chocolate;
+}
+.grid {
+display: grid;
+
+}
+.barraTopo {
+    grid-area: topo;
+    display: flex;
+    justify-content:space-around;
+    align-items: center;
+    padding: 0rem;
+    margin: 0rem;
+    background-color: chocolate;
+}
+.butaoTopo {
+    float: right;
+    padding: 1rem 1rem;
+    margin: 0rem;
+    border: 1px solid black;
+    background-color:brown;
+}
+.barraEsquerda {
+    grid-area: esquerda;
+    display: flex;
+    flex-direction: column;
+    background-color: tomato;
+    width: 7rem;
+    height: 30rem;
+    margin: 0rem;
+}
+.butaoEsquerda{
+    text-align:center;
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid black;
+    margin: 0;
+    background-color:brown;
+}
+.principal {
+    background-color: blue;
+}

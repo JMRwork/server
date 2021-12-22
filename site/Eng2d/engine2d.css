@@ -1,0 +1,48 @@
+* {
+    margin: 0%;
+    padding: 0%;
+    background-color: rgba(77, 77, 77, 0.9);
+}
+canvas {
+    width: 70%;
+    border: 2px solid #b3b3b3;
+    margin: 0%;
+    height: 700;
+    box-sizing: border-box;
+    background-color: rgb(33, 33, 33);
+}
+.ads {
+    background-color: inherit;
+}
+.barraTopo {
+    margin: 0%;
+    padding: 0%;
+    text-align: center;
+    border: 1px solid black;
+    background-color: lightblue;    
+}
+.barraEsquerda {
+    width: 10%;
+    float: left;
+    margin: 0%;
+    padding: 0%;
+    box-sizing: border-box;
+}
+.barraDireita {
+    width: 20%;
+    float: right;
+    box-sizing: border-box;
+}
+li {
+    display: inline; 
+}
+div {
+    border: 1px solid black;
+    background-color: lightblue;
+}
+li {
+    padding: 0px 5px 0px 5px;
+    border: 1px solid black;
+    background-color: lightblue; 
+}
+

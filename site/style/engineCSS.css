@@ -14,9 +14,15 @@
 .logo {
     background-color: chocolate;
 }
-.grid {
-display: grid;
-
+.container {
+display:grid;
+grid-template-columns: 1fr 120fr;
+grid-template-rows: 1fr 12fr;
+gap: 3px;
+grid-template-areas: 
+"topo topo"
+"esquerda principal"
+"foot foot";
 }
 .barraTopo {
     grid-area: topo;
@@ -29,7 +35,7 @@ display: grid;
 }
 .butaoTopo {
     float: right;
-    padding: 1rem 1rem;
+    padding: 1rem;
     margin: 0rem;
     border: 1px solid black;
     background-color:brown;
@@ -39,18 +45,24 @@ display: grid;
     display: flex;
     flex-direction: column;
     background-color: tomato;
-    width: 7rem;
-    height: 30rem;
+    width: 8rem;
+    height: 40rem;
     margin: 0rem;
 }
 .butaoEsquerda{
     text-align:center;
-    width: 100%;
     padding: 1rem;
     border: 1px solid black;
     margin: 0;
     background-color:brown;
 }
 .principal {
+    grid-area: principal;
+    display: flex;
     background-color: blue;
 }
+.foot{
+    grid-area: foot;
+    background-color: blueviolet;
+    text-align: center;
+    }

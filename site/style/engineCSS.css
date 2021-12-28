@@ -63,6 +63,10 @@ grid-template-areas:
 }
 .foot{
     grid-area: foot;
+    display: flex;
     background-color: blueviolet;
-    text-align: center;
-    }
+    justify-content: center;
+}
+a {
+    text-decoration: none;
+}

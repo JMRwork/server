@@ -7,18 +7,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Engine CSS</title>
     <link rel="stylesheet" type="text/css" href="style/engineCSS.css" />
+    <script src="javascripts/engineCSS.js"></script>
 </head>
 
-<body>
+<body onload="inicialize()">
     <a href="#" class="ads">Propaganda</a>
     <div class="container">
         <nav class="barraTopo">
-            <h1 class="logo">navegador</h1>
+            <h1 class="logo">Navegador</h1>
             <div>
-                <a class="butaoTopo">logout</a>
-                <a class="butaoTopo">About</a>
-                <a class="butaoTopo">Game</a>
-                <a class="butaoTopo">Home</a>
+                <a href="#" class="butaoTopo" onclick="toggleLogin()">Login</a>
+                <a href="#" class="butaoTopo">About</a>
+                <a href="#" class="butaoTopo">Game</a>
+                <a href="#" class="butaoTopo">Home</a>
             </div>
         </nav>
         <div class="barraEsquerda">
@@ -26,6 +27,7 @@
             <a class="butaoEsquerda">algum</a>
             <a class="butaoEsquerda">algum</a>
             <a class="butaoEsquerda">algum</a>
+            <button onclick="showBar()">showBar</button>
         </div>
         <div class="principal">
         </div>

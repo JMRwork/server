@@ -9,6 +9,8 @@
   "author": "José Marco Menezes",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.18.1"
+    "express": "^4.18.1",
+    "mongoose": "^6.3.5",
+    "nodemon": "^2.0.16"
   }
 }

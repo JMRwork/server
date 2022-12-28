@@ -1,6 +1,5 @@
 var userOn = false;
 function inicialize() {
-    toggleLogin();
     showBar();
 }
 function toggleLogin() {
@@ -8,10 +7,10 @@ function toggleLogin() {
         document.querySelector(".butaoTopo");
     if (userOn === true) {
         button.innerHTML = "Logout";
-        button.href = "/public/logout.html"
+        button.href = "/logout"
     } else {
         button.innerHTML = "Login";
-        button.href = "/public/login.html"
+        button.href = "/login"
     }
 }
 function showBar() {

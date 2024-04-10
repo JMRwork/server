@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Engine CSS</title>
+    <link rel="stylesheet" href="style/engineCSS.css">
+    <script src="javascripts/engineCSS.js" defer></script>
+</head>
+
+<body>
+    <!-- <a href="#" class="ads">Propaganda</a> -->
+    <div class="container">
+        <nav>
+            <h1 class="logo">Navegador<button onclick="showBar()">showBar</button></h1>
+            <ul>
+                <li><a href="/home" class="butaoTopo">Home</a></li>
+                <li><a href="/game" class="butaoTopo">Game</a></li>
+                <li><a href="/about" class="butaoTopo">About</a></li>
+                <li><a href="/login" class="butaoTopo">Login</a></li>
+            </ul>
+        </nav>
+        <aside>
+            <ul>
+                <li><a href="/actions" class="butaoEsquerda">Actions</a></li>
+                <li><a href="/map" class="butaoEsquerda">Map</a></li>
+                <li><a href="/inventory" class="butaoEsquerda">Inventory</a></li>
+                <li><a href="/research" class="butaoEsquerda">Research</a></li>
+                <li><a href="/missions" class="butaoEsquerda">Missions</a></li>
+            </ul>
+        </aside>
+        <main class="mainColor">
+            <form class="inputBox" action="/login" method="post">
+                <label for="username">username:</label>
+                <input type="text" name="username" id="username" placeholder="Username" required>
+                <br>
+                <label for="password">password:</label>
+                <input type="password" name="password" id="password" placeholder="Password" required>
+                <br>
+                <button type="button" id="submitBt">login</button>
+                <p id="register">New there? <a href="/register.html">register now!</a></p><br>
+                <a id="fgtPassword" href="#">forgot password?</a><br><br>
+                <p id="message"></p>
+            </form>
+        </main>
+        <footer>
+            alright reserved
+        </footer>
+    </div>
+</body>
+
+</html>

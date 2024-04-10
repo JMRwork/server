@@ -1,77 +1,260 @@
 * {
     color: #ffffff;
-    background-color: #333333;
+    list-style: none;
     font-family: monospace;
-    padding:0rem;
-    margin:0rem;
     box-sizing: border-box;
-}
-.ads{
     padding: 0rem;
     margin: 0rem;
-    background-color: crimson;
 }
-.logo {
-    background-color: #777777;
+
+html,
+body {
+
+    background-color: #333333;
 }
+
 .container {
-display:grid;
-grid-template-columns: 1fr 120fr;
-grid-template-rows: 1fr 12fr;
-gap: 3px;
-grid-template-areas: 
-"topo topo"
-"esquerda principal"
-"foot foot";
+    display: grid;
+    grid-template-columns: 0fr 100fr;
+    grid-template-rows: auto;
+    gap: 3px;
+    grid-template-areas:
+        "topo topo"
+        "esquerda principal"
+        "foot foot";
 }
-.barraTopo {
+
+nav ul {
+    display: flex;
+}
+
+nav {
     grid-area: topo;
     display: flex;
-    justify-content:space-around;
+    justify-content: space-between;
+    background-color: #777777;
     align-items: center;
-    padding: 0rem;
-    margin: 0rem;
+}
+
+.logo {
+    margin-left: 30px;
     background-color: #777777;
 }
+
 .butaoTopo {
-    float: right;
-    padding: 1rem;
-    margin: 0rem;
-    background-color:#777777;
-}
-.butaoTopo:hover{
-    background-color: #5f5f5f;
-}
-.barraEsquerda {
-    grid-area: esquerda;
-    display: flex;
-    flex-direction: column;
-    background-color: #3f3f3f;
-    width: 8rem;
-    height: 40rem;
-    margin: 0rem;
-}
-.butaoEsquerda{
-    text-align:center;
-    padding: 1rem;
-    border: 1px solid black;
-    margin: 0;
-    background-color:#4f4f4f;
-}
-.butaoEsquerda:hover{
+    display: block;
+    text-decoration: none;
+    padding: 1rem 2rem;
     background-color: #777777;
 }
-.principal {
+
+.butaoTopo:hover {
+    background-color: #4f4f4f;
+}
+
+aside {
+    grid-area: esquerda;
+    background-color: #3f3f3f;
+}
+
+.butaoEsquerda {
+    display: block;
+    text-decoration: none;
+    padding: 1rem 1rem;
+    border: 1px solid #333333;
+    background-color: #4f4f4f;
+    cursor: pointer;
+}
+
+.butaoEsquerda:hover {
+    background-color: #777777;
+}
+
+main {
     grid-area: principal;
     display: flex;
+    flex-wrap: wrap;
+}
+
+.mainColor {
     background-color: #4a4a4a;
 }
-.foot{
+
+.mainGaps {
+    border-radius: 3px;
+    padding: 3px;
+    margin: 1.5px;
+}
+
+#actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(25% - 6px);
+}
+
+#actions button {
+    height: 3rem;
+    width: 100%;
+}
+
+#actions #QtyLabel {
+    display: flex;
+    align-items: center;
+}
+
+#actions #QtyLabel label {
+    font-size: 1.2rem;
+    padding: 1rem 1.75rem;
+}
+
+#actions #QtyLabel input {
+    border: 0;
+    text-align: center;
+    padding: 1rem 0;
+    width: calc(50%);
+    height: 1rem;
+    border-bottom: 1px solid gray;
+    background-color: #333333;
+}
+
+#actions p#actionOverview {
+    text-align: center;
+}
+
+#market {
+    display: flex;
+    flex-wrap: wrap;
+    width: 75%;
+}
+
+#market #marketTitle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-basis: 100%;
+}
+
+#market #marketTitle h3 {
+    padding: 10px;
+}
+
+#market #marketTitle hr {
+    border: solid 1px #333333;
+    margin: 0 0 2rem 0;
+    width: 97%;
+}
+
+#market #marketPainel {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 10%;
+}
+
+#market #marketPainel select#itemCategories {
+    background-color: #333333;
+    border-radius: 3px;
+}
+
+#market hr.vertical {
+    border: solid 1px #333333;
+    margin: 0 1rem 0 1rem;
+}
+
+#market #marketChart {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    flex-basis: 70%;
+}
+
+#market #marketChart div button {
+    width: 4rem;
+}
+
+#market #marketChart input {
+    width: 4rem;
+    text-align: center;
+    background-color: #333333;
+}
+
+#market #marketChart p#marketOverview {
+    margin: 1rem;
+    flex-basis: 100%;
+    text-align: center;
+}
+
+#itemList {
+    display: none;
+    width: 75%;
+}
+
+#itemList table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#itemList table tr:nth-child(even) {
+    background-color: #4f4f4f;
+}
+
+#itemList table tr:nth-child(1) {
+    border-bottom: 2px solid #333333;
+    background-color: #3f3f3f;
+}
+
+#itemList table th:nth-child(odd) {
+    width: 10%;
+}
+
+#itemList table th:nth-child(even) {
+    width: 40%;
+}
+
+#itemList table td:nth-child(odd) {
+    text-align: center;
+}
+
+#itemListBtn {
+    height: 3rem;
+    width: calc(25%-10rem);
+}
+
+.inputBox {
+    margin: 7rem auto;
+}
+
+.inputBox input {
+    border: 0;
+    border-bottom: 1px solid gray;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background-color: #333333;
+}
+
+.inputBox label {
+    display: block;
+    font-size: 1.2rem;
+    margin-bottom: 1.2rem;
+}
+
+#submitBt {
+    width: 100%;
+    height: 3rem;
+}
+
+#register {
+    padding-top: 30px;
+}
+
+button {
+    cursor: pointer;
+    background-color: #333333;
+}
+
+footer {
     grid-area: foot;
     display: flex;
     background-color: #3f3f3f;
     justify-content: center;
-}
-a {
-    text-decoration: none;
 }

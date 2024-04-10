@@ -6,34 +6,65 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Engine CSS</title>
-    <link rel="stylesheet" type="text/css" href="style/engineCSS.css" />
-    <script src="javascripts/engineCSS.js"></script>
+    <link rel="stylesheet" href="style/engineCSS.css">
+    <script src="javascripts/engineCSS.js" defer></script>
 </head>
 
-<body onload="inicialize()">
-    <a href="#" class="ads">Propaganda</a>
+<body>
+    <!-- <a href="#" class="ads">Propaganda</a> -->
     <div class="container">
-        <nav class="barraTopo">
-            <h1 class="logo">Navegador</h1>
-            <div>
-                <a href="/login" class="butaoTopo">Login</a>
-                <a href="/about" class="butaoTopo">About</a>
-                <a href="/game" class="butaoTopo">Game</a>
-                <a href="/home" class="butaoTopo">Home</a>
-            </div>
+        <nav>
+            <h1 class="logo">Navegador <button onclick="showBar()">showBar</button></h1>
+            <ul>
+                <li><a href="/home" class="butaoTopo">Home</a></li>
+                <li><a href="/game" class="butaoTopo">Game</a></li>
+                <li><a href="/about" class="butaoTopo">About</a></li>
+                <li><a href="/login" class="butaoTopo">Login</a></li>
+            </ul>
         </nav>
-        <div class="barraEsquerda">
-            <a class="butaoEsquerda">algum</a>
-            <a class="butaoEsquerda">algum</a>
-            <a class="butaoEsquerda">algum</a>
-            <a class="butaoEsquerda">algum</a>
-            <button onclick="showBar()">showBar</button>
-        </div>
-        <div class="principal">
-        </div>
-        <div class="foot">
+        <aside>
+            <ul>
+                <li><a href="/actions" class="butaoEsquerda">Actions</a></li>
+                <li><a href="/map" class="butaoEsquerda">Map</a></li>
+                <li><a href="/inventory" class="butaoEsquerda">Inventory</a></li>
+                <li><a href="/research" class="butaoEsquerda">Research</a></li>
+                <li><a href="/missions" class="butaoEsquerda">Missions</a></li>
+            </ul>
+        </aside>
+        <main>
+            <div id="itemList" class="mainColor mainGaps"></div>
+            <div id="actions" class="mainColor mainGaps">
+                <!-- gettActions([{action: 'getWood', value: 1, textContent: 'wood'},
+                     {action: 'getFood', value: 2, textContent: 'food'}]); -->
+            </div>
+            <div id="market" class="mainColor mainGaps">
+                <div id="marketTitle">
+                    <h3>Market</h3>
+                    <hr>
+                </div>
+                <div id="marketPainel">
+                    <select name="itemCategories" id="itemCategories">
+                        <option hidden disabled selected>Select one item</option>
+                        <optgroup label="Raw Materials">
+                            <option value="1">block of wood</option>
+                        </optgroup>
+                        <optgroup label="Consumables">
+                            <option value="2">Food</option>
+                            <option value="5">Container of Water</option>
+                        </optgroup>
+                    </select>
+                    <button id="marketStatistics">Storage Meters</button>
+                </div>
+                <hr class="vertical">
+                <div id="marketChart">
+                    <p id="marketOverview"> </p>
+                </div>
+            </div>
+            <button id="itemListBtn">List items</button>
+        </main>
+        <footer>
             alright reserved
-        </div>
+        </footer>
     </div>
 </body>
 

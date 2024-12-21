@@ -1,58 +1,41 @@
-const path = require('path');
-const file = path.join(__dirname, '../public/engineCSS.html');
-const loginHTML = path.join(__dirname, '../public/login.html');
+const db = require('../config/db.js');
 
-const getActions = async (req, res) => {
-    if (req.cookies['session.sig'] && req.cookies.session) {
-        res.status(200).sendFile(file);
-    } else {
-        res.status(401).sendFile(loginHTML);
+const login = async (req, res, next) => {
+    try {
+        const { username, password } = req.body;
+        console.log(username);
+        const userData = await db.query('SELECT * FROM users WHERE username = $1', [username]);
+        const user = userData.rows;
+        console.log(user);
+        console.log(user.length);
+        if (user.length === 0) {
+            res.status(401).json({
+                message: 'Credentials not correct.'
+            });
+        } else if (user[0].password === password) {
+            req.session.id = user[0].id;
+            req.session.username = user[0].username;
+            res.cookie('u_on', 'true', { maxAge: 3 * 60 * 60 * 1000 });
+            res.status(200).redirect('/home');
+        } else {
+            res.status(401).json({
+                message: 'Credentials not correct.'
+            });
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({
+            message: 'Internal Server Error.'
+        });
     }
 };
 
-const getMap = async (req, res) => {
-    if (req.cookies['session.sig'] && req.cookies.session) {
-        res.status(200).sendFile(file);
-    } else {
-        res.status(401).sendFile(loginHTML);
-    }
-};
-
-const getInventory = async (req, res) => {
-    if (req.cookies['session.sig'] && req.cookies.session) {
-        res.status(200).sendFile(file);
-    } else {
-        res.status(401).sendFile(loginHTML);
-    }
-};
-
-const getResearch = async (req, res) => {
-    if (req.cookies['session.sig'] && req.cookies.session) {
-        res.status(200).sendFile(file);
-    } else {
-        res.status(401).sendFile(loginHTML);
-    }
-};
-
-const getMissions = async (req, res) => {
-    if (req.cookies['session.sig'] && req.cookies.session) {
-        res.status(200).sendFile(file);
-    } else {
-        res.status(401).sendFile(loginHTML);
-    }
-};
-
-const logout = async (req, res) => {
+const logout = (req, res) => {
     req.session = null;
-    res.clearCookie('u_on');
     res.status(200).redirect('/');
 };
 
 module.exports = {
-    getActions,
-    getMap,
-    getInventory,
-    getResearch,
-    getMissions,
+    login,
     logout
 };

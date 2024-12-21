@@ -1,4 +1,4 @@
-const getLocalActions = async (req, res) => {
+const getLocalActions = (req, res) => {
     try {
         res.status(200).json([
             {
@@ -15,6 +15,11 @@ const getLocalActions = async (req, res) => {
                 action: 'getWater',
                 value: 5,
                 textContent: 'Get Water'
+            },
+            {
+                action: 'getMarket',
+                value: null,
+                textContent: 'Market'
             }]);
     } catch (err) {
         console.log(err);

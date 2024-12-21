@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 let userOn = false;
 window.onload = inicialize();
 function inicialize() {
@@ -5,8 +6,12 @@ function inicialize() {
         userOn = true;
     }
     toggleLogin();
-    showBar();
+    showBar(false);
+    if (!document.getElementById('submitBt')) {
+        getDashboard(false);
+    }
 }
+
 function toggleLogin() {
     const button =
         document.querySelectorAll('.butaoTopo');
@@ -18,17 +23,23 @@ function toggleLogin() {
         button[3].href = '/login';
     }
 }
-function showBar() {
+
+function showBar(isTest) {
     const bar =
         document.querySelector('aside');
     if (userOn) {
-        userOn = false;
         bar.style.display = 'block';
+        if (isTest) {
+            userOn = false;
+        }
     } else {
-        userOn = true;
         bar.style.display = 'none';
+        if (isTest) {
+            userOn = true;
+        }
     }
 }
+
 function loginFetch(event) {
     // event.preventDefault();
     const message = document.getElementById('message');
@@ -63,6 +74,7 @@ function loginFetch(event) {
             }
         })
         .catch(error => {
+            console.error(error);
             message.style.color = 'rgb(255, 20, 20)';
             message.innerHTML = error;
         });
@@ -71,6 +83,7 @@ function loginFetch(event) {
 function registerFetch(event) {
     // event.preventDefault();
     const message = document.getElementById('message');
+    message.style.color = 'rgb(255, 20, 20)';
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
     const repeatPassword = document.getElementById('repeatPassword').value;
@@ -97,8 +110,6 @@ function registerFetch(event) {
                 console.log(response);
                 if (response.status === 201) {
                     message.style.color = 'white';
-                } else {
-                    message.style.color = 'rgb(255, 20, 20)';
                 }
                 return response.json();
             })
@@ -106,6 +117,8 @@ function registerFetch(event) {
                 message.innerText = obj.message;
             })
             .catch(error => {
+                console.error(error);
+                message.style.color = 'rgb(255, 20, 20)';
                 message.innerHTML = error;
             });
     }
@@ -120,106 +133,113 @@ if (document.getElementById('submitBt')) {
     }
 }
 
-function getItemStack() {
-    const itemList = document.getElementById('itemList');
-    itemList.style.display = 'flex';
-    const message = document.getElementById('itemList');
+function getItemStack(refresh) {
+    const painel = document.getElementById('painel');
+    let itemList;
+    let doFecth = true;
+    if (document.getElementById('itemList')) {
+        itemList = document.getElementById('itemList');
+        if (!refresh) {
+            doFecth = false;
+            painel.removeChild(itemList);
+        }
+    } else {
+        itemList = document.createElement('div');
+        itemList.setAttribute('id', 'itemList');
+        itemList.setAttribute('class', 'mainColor mainGaps');
+        painel.appendChild(itemList);
+    }
     // Obtenção via Fetch/db quantidade de items
-    fetch('/userInventory')
-        .then(async response => {
-            if (response.ok) {
-                const inventory = await response.json();
-                const stackInventory = { null: 0 };
-                inventory.forEach(element => { stackInventory[element] = stackInventory[element] + 1 || 1; });
-                if (stackInventory.null !== 10) {
-                    return stackInventory;
+    if (doFecth) {
+        fetch('/userInventory')
+            .then(async response => {
+                console.log(response);
+                if (response.ok) {
+                    const inventory = await response.json();
+                    const stackInventory = { null: 0 };
+                    inventory.forEach(element => { stackInventory[element] = stackInventory[element] + 1 || 1; });
+                    if (stackInventory.null !== 10) {
+                        return stackInventory;
+                    } else {
+                        return {
+                            message: 'Your inventory is empty.'
+                        };
+                    }
                 } else {
-                    return {
-                        message: 'Your inventory is empty.'
-                    };
+                    return response.json();
                 }
-            } else {
-                return response.json();
-            }
-        })
-        .then(obj => {
-            if (!obj.message) {
-                const stackInventory = obj;
-                // Lógica para o fetch item Data
-                fetch('/items')
-                    .then(async response => {
-                        // informação dos itens
-                        if (response.ok) {
-                            const itemData = await response.json();
-                            const items = [];
-                            for (const element in stackInventory) {
-                                itemData.forEach(itemObj => {
-                                    if (element === itemObj.itemId.toString()) {
-                                        const item = [];
-                                        item.push(itemObj.itemId);
-                                        item.push(itemObj.name);
-                                        item.push(stackInventory[element]);
-                                        item.push(itemObj.description);
-                                        items.push(item);
-                                    }
-                                });
-                            }
-                            return items;
-                        } else {
-                            return response.json();
-                        }
-                    })
-                    .then(obj => {
-                        // Template listagem
-                        if (!obj.message) {
-                            const itemTemplate = ['Icon', 'Name', 'Qty', 'Description'];
-                            const table = document.createElement('table');
-                            const rows = [];
-                            const stackInventoryLength = Object.keys(stackInventory).length;
-                            for (let i = 0; i < stackInventoryLength; i++) {
-                                rows[i] = document.createElement('tr');
-                                if (i === 0) {
-                                    const itemHeaders = [];
-                                    for (let j = 0; j < 4; j++) {
-                                        itemHeaders[j] = document.createElement('th');
-                                        itemHeaders[j].textContent = itemTemplate[j];
-                                        rows[i].appendChild(itemHeaders[j]);
-                                    }
-                                } else {
-                                    const itemData = [];
-                                    for (let j = 0; j < 4; j++) {
-                                        itemData[j] = document.createElement('td');
-                                        itemData[j].textContent = obj[i - 1][j];
-                                        rows[i].appendChild(itemData[j]);
-                                    }
+            })
+            .then(obj => {
+                if (!obj.message) {
+                    const stackInventory = obj;
+                    // Lógica para o fetch item Data
+                    fetch('/items')
+                        .then(async response => {
+                            // informação dos itens
+                            if (response.ok) {
+                                const itemData = await response.json();
+                                const items = [];
+                                for (const element in stackInventory) {
+                                    itemData.forEach(itemObj => {
+                                        if (element === itemObj.itemId.toString()) {
+                                            const item = [];
+                                            item.push(itemObj.itemId);
+                                            item.push(itemObj.name);
+                                            item.push(stackInventory[element]);
+                                            item.push(itemObj.description);
+                                            items.push(item);
+                                        }
+                                    });
                                 }
-                                table.appendChild(rows[i]);
+                                return items;
+                            } else {
+                                return response.json();
                             }
-                            if (itemList.childNodes[0]) {
-                                itemList.removeChild(itemList.childNodes[0]);
+                        })
+                        .then(obj => {
+                            // Template listagem
+                            if (!obj.message) {
+                                const itemTemplate = ['Icon', 'Name', 'Qty', 'Description'];
+                                const table = document.createElement('table');
+                                const rows = [];
+                                const stackInventoryLength = Object.keys(stackInventory).length;
+                                for (let i = 0; i < stackInventoryLength; i++) {
+                                    rows[i] = document.createElement('tr');
+                                    if (i === 0) {
+                                        const itemHeaders = [];
+                                        for (let j = 0; j < 4; j++) {
+                                            itemHeaders[j] = document.createElement('th');
+                                            itemHeaders[j].textContent = itemTemplate[j];
+                                            rows[i].appendChild(itemHeaders[j]);
+                                        }
+                                    } else {
+                                        const itemData = [];
+                                        for (let j = 0; j < 4; j++) {
+                                            itemData[j] = document.createElement('td');
+                                            itemData[j].textContent = obj[i - 1][j];
+                                            rows[i].appendChild(itemData[j]);
+                                        }
+                                    }
+                                    table.appendChild(rows[i]);
+                                }
+                                itemList.replaceChildren(table);
+                            } else {
+                                itemList.innerText = obj.message;
                             }
-                            itemList.appendChild(table);
-                        } else {
-                            message.innerText = obj.message;
-                        }
-                    })
-                    .catch(error => {
-                        console.log(error);
-                        message.innerText = 'Failed to get item data.';
-                    });
-            } else {
-                message.innerText = obj.message;
-            }
-        })
-        .catch(error => {
-            console.log(error);
-            message.innerText = 'Failed to get inventory.';
-        });
-}
-
-if (document.getElementById('itemListBtn')) {
-    const itemListBtn = document.getElementById('itemListBtn');
-    itemListBtn.addEventListener('click', getItemStack);
+                        })
+                        .catch(error => {
+                            console.log(error);
+                            itemList.innerText = 'Failed to get item data.';
+                        });
+                } else {
+                    itemList.innerText = obj.message;
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                itemList.innerText = 'Failed to get inventory.';
+            });
+    }
 }
 
 function updateItems(action, emiter) {
@@ -240,6 +260,7 @@ function updateItems(action, emiter) {
             message.innerText = 'Unable to proceed with this action';
         });
 }
+
 function gatheringAction(event) {
     const action = {
         operation: 'add',
@@ -249,46 +270,197 @@ function gatheringAction(event) {
     };
     const emiter = 'actionOverview';
     updateItems(action, emiter);
+    setTimeout(() => getItemStack(true), 500);
 }
 
-function getActions() {
-    const actionsLabel = document.getElementById('actions');
-    const actionOverview = document.createElement('p');
-    actionOverview.id = 'actionOverview';
-    fetch('/localActions')
-        .then(response => { return response.json(); })
-        .then(actions => {
-            const qtyLabel = document.createElement('div');
-            qtyLabel.id = 'QtyLabel';
-            const textLabel = document.createElement('label');
-            textLabel.setAttribute('for', 'actionsQty');
-            textLabel.textContent = 'Qty';
-            const inputLabel = document.createElement('input');
-            inputLabel.id = 'actionsQty';
-            inputLabel.value = 1;
-            qtyLabel.append(textLabel, inputLabel);
-            actionsLabel.append(qtyLabel, actionOverview);
-            const actionsButtons = [];
-            for (let i = 0; i < actions.length; i++) {
-                actionsButtons[i] = document.createElement('button');
-                actionsButtons[i].id = actions[i].action;
-                actionsButtons[i].value = actions[i].value;
-                actionsButtons[i].textContent = actions[i].textContent;
-                actionsLabel.insertBefore(actionsButtons[i], qtyLabel);
-            }
-            actionsButtons.forEach((button) => {
-                button.addEventListener('click', gatheringAction);
+function getDashboard(refresh) {
+    const painel = document.getElementById('painel');
+    let dashboard;
+    let doFecth = true;
+    if (document.getElementById('dashboard')) {
+        dashboard = document.getElementById('dashboard');
+        if (!refresh) {
+            doFecth = false;
+            painel.removeChild(dashboard);
+        }
+    } else {
+        dashboard = document.createElement('div');
+        dashboard.setAttribute('id', 'dashboard');
+        dashboard.setAttribute('class', 'mainColor mainGaps');
+        painel.appendChild(dashboard);
+    }
+    if (doFecth) {
+        fetch('/status')
+            .then(response => {
+                return response.json();
+            })
+            .then(status => {
+                const dashboardTitle = document.createElement('h3');
+                dashboardTitle.innerText = 'Dashboard';
+                dashboardTitle.setAttribute('id', 'dashboardTitle');
+                const dashboardChart = document.createElement('div');
+                dashboardChart.setAttribute('id', 'dashboardChart');
+                dashboard.replaceChildren(dashboardTitle, dashboardChart);
+                // Body
+                const dashboardCurrency = document.createElement('p');
+                dashboardCurrency.setAttribute('id', 'dashboardCurrency');
+                dashboardCurrency.innerText = `Currency: ${status.currency} ¢`;
+                const dashboardInventoryStack = document.createElement('p');
+                dashboardInventoryStack.setAttribute('id', 'dashboardInventory');
+                dashboardInventoryStack.innerText = `Free Inventory: ${status.inventory}/10`;
+                const dashboardLocation = document.createElement('p');
+                dashboardLocation.setAttribute('id', 'dashboardLocation');
+                dashboardLocation.innerText = `Location sector: ${status.location}`;
+                const dashboardMission = document.createElement('div');
+                dashboardMission.setAttribute('id', 'dashboardMission');
+                dashboardMission.innerText = 'Actual Mission: ';
+                const dashboardMissionSelect = document.createElement('select');
+                dashboardMissionSelect.setAttribute('id', 'dashboardMissionSelect');
+                dashboardMissionSelect.addEventListener('change', (event) => {
+                    const missionStep = document.getElementById('dashboardMissionStep');
+                    for (let i = 0; i < status.missionStatus.length; i++) {
+                        if (status.missionStatus[i].missionId === parseInt(event.target.value)) {
+                            missionStep.innerText = status.missionStatus[i].missionStep;
+                        }
+                    }
+                });
+                status.missionStatus.forEach((mission) => {
+                    const option = document.createElement('option');
+                    option.value = mission.missionId;
+                    option.innerText = mission.missionId;
+                    dashboardMissionSelect.appendChild(option);
+                });
+                const dashboardMissionStep = document.createElement('p');
+                dashboardMissionStep.setAttribute('id', 'dashboardMissionStep');
+                dashboardMissionStep.innerText = `This is the current Step: ${status.missionStatus[0].missionStep}`;
+                dashboardChart.append(dashboardCurrency, dashboardInventoryStack, dashboardLocation, dashboardMission);
+                dashboardMission.append(dashboardMissionSelect, dashboardMissionStep);
+            })
+            .catch(error => {
+                dashboard.innerText = 'Unable to get Dashboard';
+                console.log(error);
             });
-        })
-        .catch(err => {
-            console.log(err);
-            actionsLabel.append(actionOverview);
-            actionOverview.textContent = 'No action avaliable.';
-        });
+    }
 }
 
-if (document.getElementById('actions')) {
-    getActions();
+function getActions(refresh) {
+    const painel = document.getElementById('painel');
+    let actionsPainel;
+    let doFecth = true;
+    if (document.getElementById('actions')) {
+        actionsPainel = document.getElementById('actions');
+        if (!refresh) {
+            doFecth = false;
+            painel.removeChild(actionsPainel);
+        }
+    } else {
+        actionsPainel = document.createElement('div');
+        actionsPainel.setAttribute('id', 'actions');
+        actionsPainel.setAttribute('class', 'mainColor mainGaps');
+        painel.appendChild(actionsPainel);
+    }
+    const actionOverview = document.createElement('p');
+    actionOverview.setAttribute('id', 'actionOverview');
+    if (doFecth) {
+        fetch('/localActions')
+            .then(response => { return response.json(); })
+            .then(actions => {
+                const qtyLabel = document.createElement('div');
+                qtyLabel.id = 'QtyLabel';
+                const textLabel = document.createElement('label');
+                textLabel.setAttribute('for', 'actionsQty');
+                textLabel.textContent = 'Qty';
+                const inputLabel = document.createElement('input');
+                inputLabel.id = 'actionsQty';
+                inputLabel.value = 1;
+                qtyLabel.append(textLabel, inputLabel);
+                actionsPainel.replaceChildren(qtyLabel, actionOverview);
+                const actionsButtons = [];
+                for (let i = 0; i < actions.length; i++) {
+                    actionsButtons[i] = document.createElement('button');
+                    actionsButtons[i].setAttribute('id', actions[i].action);
+                    actionsButtons[i].setAttribute('value', actions[i].value);
+                    actionsButtons[i].textContent = actions[i].textContent;
+                    actionsPainel.insertBefore(actionsButtons[i], qtyLabel);
+                }
+                actionsButtons.forEach(button => {
+                    if (button.value === 'null') {
+                        button.addEventListener('click', getMarket);
+                    } else {
+                        button.addEventListener('click', gatheringAction);
+                    }
+                });
+            })
+            .catch(err => {
+                console.log(err);
+                actionsPainel.textContent = 'No action avaliable.';
+            });
+    }
+}
+
+function getMarket() {
+    const painel = document.getElementById('painel');
+    let market;
+    if (document.getElementById('market')) {
+        market = document.getElementById('market');
+        painel.removeChild(market);
+    } else {
+        // Mock Items
+        const items = [{ itemId: 1, name: 'Block of Wood' }, { itemId: 2, name: 'Food' }, { itemId: 5, name: 'Container of Water' }];
+        market = document.createElement('div');
+        market.setAttribute('id', 'market');
+        market.setAttribute('class', 'mainColor mainGaps');
+        // Market header
+        const marketTitle = document.createElement('div');
+        marketTitle.setAttribute('id', 'marketTitle');
+        const marketTitleName = document.createElement('h3');
+        marketTitleName.innerText = 'Market';
+        const marketTitleDivisory = document.createElement('hr');
+        marketTitle.append(marketTitleName, marketTitleDivisory);
+        // Market Body
+        const marketPainel = document.createElement('div');
+        marketPainel.setAttribute('id', 'marketPainel');
+        const marketOptions = document.createElement('div');
+        marketOptions.setAttribute('id', 'marketOptions');
+        const marketVerticalDivisory = document.createElement('hr');
+        marketVerticalDivisory.setAttribute('class', 'vertical');
+        const marketChart = document.createElement('div');
+        marketChart.setAttribute('id', 'marketChart');
+        const marketOverview = document.createElement('p');
+        marketOverview.setAttribute('id', 'marketOverview');
+        marketChart.append(marketOverview);
+        marketPainel.append(marketOptions, marketVerticalDivisory, marketChart);
+        // Items Options
+        const selectItem = document.createElement('select');
+        selectItem.setAttribute('id', 'itemCategories');
+        selectItem.setAttribute('name', 'itemCategories');
+        selectItem.addEventListener('change', getItemOrder);
+        const selectLabel = document.createElement('option');
+        selectLabel.innerText = 'Select an item...';
+        selectLabel.setAttribute('disabled', true);
+        selectLabel.setAttribute('selected', true);
+        const itemCategories = items.map(item => {
+            const itemBlock = document.createElement('option');
+            itemBlock.setAttribute('value', item.itemId);
+            itemBlock.innerText = item.name;
+            return itemBlock;
+        });
+        selectItem.append(selectLabel, ...itemCategories);
+        // Options others Funcinalities
+        const storageMetersButton = document.createElement('button');
+        storageMetersButton.innerText = 'Storage Meters';
+        const assets = document.createElement('div');
+        const assetsTitle = document.createElement('h3');
+        assetsTitle.innerText = 'Current Assets:';
+        const assetsCurrency = document.createElement('p');
+        assetsCurrency.innerText = 'Currency: 0¢';
+        const assetsFreeSpace = document.createElement('p');
+        assetsFreeSpace.innerText = 'Inventory free space: 0';
+        assets.append(assetsTitle, assetsCurrency, assetsFreeSpace);
+        marketOptions.append(selectItem, storageMetersButton, assets);
+        market.append(marketTitle, marketPainel);
+        painel.append(market);
+    }
 }
 
 function getItemOrder(event) {
@@ -358,9 +530,22 @@ function tradeItem(operation, qty, itemId) {
     };
     const emiter = 'marketOverview';
     updateItems(action, emiter);
+    setTimeout(() => getItemStack(true), 500);
 }
-
-if (document.getElementById('market')) {
-    const itemToList = document.getElementById('itemCategories');
-    itemToList.addEventListener('change', getItemOrder);
+function getResearch(refresh) {
+    const painel = document.getElementById('painel');
+    let researchPainel;
+    let doFecth = true;
+    if (document.getElementById('research')) {
+        researchPainel = document.getElementById('research');
+        if (!refresh) {
+            doFecth = false;
+            painel.removeChild(researchPainel);
+        }
+    } else {
+        researchPainel = document.createElement('div');
+        researchPainel.setAttribute('id', 'actions');
+        researchPainel.setAttribute('class', 'mainColor mainGaps');
+        painel.appendChild(researchPainel);
+    }
 }

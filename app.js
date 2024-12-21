@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 const port = process.env.PORT || 3000;
 const morgan = require('morgan');
+const { verifySession } = require('./middleware/session');
 const mainRouters = require('./routers/mainRouter');
 const cookieSession = require('cookie-session');
 const cookieParser = require('cookie-parser');
@@ -15,6 +16,7 @@ app.use(cookieSession({
 }));
 
 app.use(morgan('tiny'), express.static('./public'), express.json());
+app.use(verifySession);
 app.use(mainRouters);
 
 app.all('*', function (request, response) {

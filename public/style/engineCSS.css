@@ -15,8 +15,10 @@ body {
 
 .container {
     display: grid;
-    grid-template-columns: 0fr 100fr;
-    grid-template-rows: auto;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto 1fr auto;
+    width: 100vw;
+    height: 100vh;
     gap: 3px;
     grid-template-areas:
         "topo topo"
@@ -73,6 +75,11 @@ aside {
 main {
     grid-area: principal;
     display: flex;
+}
+
+#painel {
+    display: flex;
+    width: 100%;
     flex-wrap: wrap;
 }
 
@@ -86,11 +93,37 @@ main {
     margin: 1.5px;
 }
 
+#dashboard {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+#dashboard #dashboardTitle {
+    text-align: center;
+    padding: 20px;
+}
+
+#dashboard #dashboardChart {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#dashboard #dashboardChart #dashboardCurrency {}
+
+#dashboard #dashboardChart #dashboardInventory {}
+
+#dashboard #dashboardChart #dashboardLocation {}
+
+#dashboard #dashboardChart #dashboardMission {}
+
+#dashboard #dashboardChart #dashboardResearch {}
+
 #actions {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: calc(25% - 6px);
+    flex-basis: calc(25% - 6px);
 }
 
 #actions button {
@@ -124,15 +157,15 @@ main {
 
 #market {
     display: flex;
-    flex-wrap: wrap;
-    width: 75%;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    flex-basis: 75%;
 }
 
 #market #marketTitle {
     display: flex;
     flex-direction: column;
     align-items: center;
-    flex-basis: 100%;
 }
 
 #market #marketTitle h3 {
@@ -141,24 +174,30 @@ main {
 
 #market #marketTitle hr {
     border: solid 1px #333333;
-    margin: 0 0 2rem 0;
+    margin: 0 0 10px 0;
     width: 97%;
 }
 
 #market #marketPainel {
     display: flex;
-    flex-direction: column;
-    flex-basis: 10%;
+    height: 100%;
 }
 
-#market #marketPainel select#itemCategories {
+#market #marketOptions {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 15%;
+    row-gap: 15px;
+}
+
+#market #marketOptions select#itemCategories {
     background-color: #333333;
     border-radius: 3px;
 }
 
-#market hr.vertical {
+#market #marketPainel hr.vertical {
     border: solid 1px #333333;
-    margin: 0 1rem 0 1rem;
+    margin: 0 10px 0 10px;
 }
 
 #market #marketChart {
@@ -185,8 +224,8 @@ main {
 }
 
 #itemList {
-    display: none;
-    width: 75%;
+    display: flex;
+    flex-basis: 75%;
 }
 
 #itemList table {
@@ -226,6 +265,7 @@ main {
 
 .inputBox input {
     border: 0;
+    width: 100%;
     border-bottom: 1px solid gray;
     padding: 1rem;
     margin-bottom: 1.5rem;

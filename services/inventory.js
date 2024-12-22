@@ -1,11 +1,11 @@
 /* eslint-disable indent */
-const { findUserInventory, updateUserInventory } = require('../repository/inventory');
+const { findUserItems, updateUserItems } = require('../repository/inventory');
 const { findUserCurrency } = require('../repository/status');
 
 async function getInventoryService(userId) {
-    const response = await findUserInventory(userId);
-    if (response.sucessful) {
-        const userInventoryArray = Object.values(response.userInventoryObj.rows[0]);
+    const response = await findUserItems(userId);
+    if (response.sucessful === true) {
+        const userInventoryArray = Object.values(response.userInventoryObj);
         userInventoryArray.shift();
         console.log(userInventoryArray);
         return { sucessful: response.sucessful, userInventory: userInventoryArray };
@@ -20,24 +20,23 @@ async function ChangeInventoryService(userId, inventoryChanges) {
     const itemChanged = { state: false, operation: inventoryChanges.operation, qty: 0 };
     const currencyChanged = { state: false };
 
-    const userInventoryResponse = await findUserInventory(userId);
+    const userInventoryResponse = await findUserItems(userId);
     if (!userInventoryResponse.sucessful) {
         return { message: userInventoryResponse.error };
     }
-    const inventory = userInventoryResponse.userInventoryObj;
+    const userInventory = userInventoryResponse.userInventoryObj;
     // Data structuring to accomplish changes
-    const userInventoryObj = inventory.rows[0];
-    delete userInventoryObj.user_id;
-    console.log(userInventoryObj);
+    delete userInventory.user_id;
+    console.log(userInventory);
     // Changing Data state
     // else if (inventoryChanges.operation === 'replace') {}
     // Commit to inventories table
     switch (inventoryChanges.origin) {
         case 'actions':
-            actionsOperationService(userInventoryObj, inventoryChanges, itemChanged);
+            actionsOperationService(userInventory, inventoryChanges, itemChanged);
             break;
         case 'market':
-            await marketOperationService(userInventoryObj, inventoryChanges, itemChanged, currencyChanged);
+            await marketOperationService(userInventory, inventoryChanges, itemChanged, currencyChanged);
             break;
         default:
             print('Error: Invalid origin.');
@@ -50,11 +49,11 @@ async function ChangeInventoryService(userId, inventoryChanges) {
     console.log(itemChanged);
     if (itemChanged.state) {
         const inventoryNewState = [];
-        for (const itemIdSlot in userInventoryObj) {
-            inventoryNewState.push(userInventoryObj[itemIdSlot]);
+        for (const itemIdSlot in userInventory) {
+            inventoryNewState.push(userInventory[itemIdSlot]);
         }
         console.log(inventoryNewState);
-        const userDataUpdateResponse = await updateUserInventory(inventoryNewState, userId);
+        const userDataUpdateResponse = await updateUserItems(inventoryNewState, userId);
         if (!userDataUpdateResponse.Sucessful) {
             return { message: userDataUpdateResponse.error };
         }
@@ -77,12 +76,12 @@ async function ChangeInventoryService(userId, inventoryChanges) {
     } */
 }
 
-function actionsOperationService(userInventoryObj, inventoryChanges, itemChanged) {
+function actionsOperationService(userInventory, inventoryChanges, itemChanged) {
     if (inventoryChanges.operation === 'add') {
         if (inventoryChanges.qty > 0) {
-            for (const itemIdSlot in userInventoryObj) {
-                if (userInventoryObj[itemIdSlot] === null) {
-                    userInventoryObj[itemIdSlot] = inventoryChanges.itemId;
+            for (const itemIdSlot in userInventory) {
+                if (userInventory[itemIdSlot] === null) {
+                    userInventory[itemIdSlot] = inventoryChanges.itemId;
                     itemChanged.qty += 1;
                 }
                 if (itemChanged.qty === inventoryChanges.qty) break;
@@ -90,9 +89,9 @@ function actionsOperationService(userInventoryObj, inventoryChanges, itemChanged
         }
     } else if (inventoryChanges.operation === 'remove') {
         if (inventoryChanges.qty > 0) {
-            for (const itemIdSlot in userInventoryObj) {
-                if (userInventoryObj[itemIdSlot] === inventoryChanges.itemId) {
-                    userInventoryObj[itemIdSlot] = null;
+            for (const itemIdSlot in userInventory) {
+                if (userInventory[itemIdSlot] === inventoryChanges.itemId) {
+                    userInventory[itemIdSlot] = null;
                     itemChanged.qty += 1;
                 }
                 if (itemChanged.qty === inventoryChanges.qty) break;
@@ -101,19 +100,19 @@ function actionsOperationService(userInventoryObj, inventoryChanges, itemChanged
     }
 }
 
-async function marketOperationService(userInventoryObj, inventoryChanges, itemChanged, currencyChanged) {
+async function marketOperationService(userInventory, inventoryChanges, itemChanged, currencyChanged) {
     const marketStore = { itemId: 1, price: 1, qty: 10 };
     const userCurrency = await findUserCurrency();
     currencyChanged.totalValor = 0;
     currencyChanged.state = true;
     if (inventoryChanges.operation === 'add') {
         if (inventoryChanges.qty > 0 && userCurrency > 0) {
-            for (const itemIdSlot in userInventoryObj) {
-                if (userInventoryObj[itemIdSlot] === null) {
+            for (const itemIdSlot in userInventory) {
+                if (userInventory[itemIdSlot] === null) {
                     if (currencyChanged.totalValor >= userCurrency) {
                         break;
                     }
-                    userInventoryObj[itemIdSlot] = inventoryChanges.itemId;
+                    userInventory[itemIdSlot] = inventoryChanges.itemId;
                     itemChanged.qty += 1;
                     currencyChanged.totalValor += marketStore.price;
                 }
@@ -124,9 +123,9 @@ async function marketOperationService(userInventoryObj, inventoryChanges, itemCh
         console.log(userCurrency);
     } else if (inventoryChanges.operation === 'remove') {
         if (inventoryChanges.qty > 0) {
-            for (const itemIdSlot in userInventoryObj) {
-                if (userInventoryObj[itemIdSlot] === inventoryChanges.itemId) {
-                    userInventoryObj[itemIdSlot] = null;
+            for (const itemIdSlot in userInventory) {
+                if (userInventory[itemIdSlot] === inventoryChanges.itemId) {
+                    userInventory[itemIdSlot] = null;
                     itemChanged.qty += 1;
                     currencyChanged.totalValor += marketStore.price;
                 }

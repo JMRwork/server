@@ -1,20 +1,23 @@
-const db = require('../config/db.js');
+const { registerService } = require('../services/register');
 
 const register = async (req, res) => {
     try {
         const { username, password } = req.body;
-        const userQuery = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-        if (userQuery.rows.length) {
-            res.status(409).json({
-                message: 'Username already exists.'
+        if (!username || !password) {
+            res.status(400).json({
+                message: 'Credentials are required.'
             });
         } else {
-            const userCreate = await db.query('INSERT INTO users(username, password) VALUES ($1, $2) RETURNING id', [username, password]);
-            const userInventory = await db.query('INSERT INTO inventories (user_id) VALUES ($1)', [userCreate.rows[0].id]);
-            console.log(userInventory.rows[0]);
-            res.status(201).json({
-                message: 'User created successfully.'
-            });
+            const response = await registerService(username, password);
+            if (response.message === 'User created successfully') {
+                res.status(201).json({
+                    message: response.message
+                });
+            } else {
+                res.status(409).json({
+                    message: response.message
+                });
+            }
         }
     } catch (err) {
         console.log(err);

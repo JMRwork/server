@@ -5,4 +5,25 @@ async function testInventoryUpdate(newInventory) {
     console.log(response);
 }
 
-testInventoryUpdate([1, 1, 1, 1, 2, 5, 5, 5, 5, 5]);
+async function testCreateUser(username, password) {
+    const client = await db.connect();
+    let response;
+    try {
+        await client.query('BEGIN');
+        const resultUserCreate = await client.query('INSERT INTO users(username, password) VALUES ($1, $2) RETURNING id', [username, password]);
+        await client.query('INSERT INTO users_status (user_id) VALUES ($1)', [resultUserCreate.rows[0].id]);
+        await client.query('COMMIT');
+        response = { message: 'User created successfully' };
+    } catch (error) {
+        console.error('Error creating user:', error);
+        await client.query('ROLLBACK');
+        response = { message: 'Internal Server Error' };
+    } finally {
+        await client.release();
+        console.log(response);
+        return response;
+    }
+}
+
+// testCreateUser('test', 'test');
+// testInventoryUpdate([1, 1, 1, 1, 2, 5, 5, 5, 5, 5]);

@@ -14,5 +14,6 @@ pool.on('release', () => {
 
 module.exports = {
     connect: (config) => pool.connect(config),
-    query: (text, params) => pool.query(text, params)
+    query: (text, params) => pool.query(text, params),
+    release: () => pool.release()
 };

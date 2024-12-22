@@ -1,26 +1,25 @@
-const db = require('../config/db.js');
+const { loginService } = require('../services/auth');
 
-const login = async (req, res, next) => {
+const login = async (req, res) => {
     try {
         const { username, password } = req.body;
-        console.log(username);
-        const userData = await db.query('SELECT * FROM users WHERE username = $1', [username]);
-        const user = userData.rows;
-        console.log(user);
-        console.log(user.length);
-        if (user.length === 0) {
-            res.status(401).json({
-                message: 'Credentials not correct.'
+        if (!username || !password) {
+            res.status(400).json({
+                message: 'Credentials are required.'
             });
-        } else if (user[0].password === password) {
-            req.session.id = user[0].id;
-            req.session.username = user[0].username;
-            res.cookie('u_on', 'true', { maxAge: 3 * 60 * 60 * 1000 });
-            res.status(200).redirect('/home');
         } else {
-            res.status(401).json({
-                message: 'Credentials not correct.'
-            });
+            const response = await loginService(username, password);
+            console.log(response);
+            if (response.user) {
+                req.session.id = response.user.id;
+                req.session.username = response.user.username;
+                res.cookie('u_on', true);
+                res.status(200).redirect('/home');
+            } else {
+                res.status(401).json({
+                    message: response.message
+                });
+            }
         }
     } catch (err) {
         console.log(err);
@@ -32,6 +31,7 @@ const login = async (req, res, next) => {
 
 const logout = (req, res) => {
     req.session = null;
+    res.clearCookie('u_on');
     res.status(200).redirect('/');
 };
 

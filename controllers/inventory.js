@@ -1,4 +1,4 @@
-const { getInventoryService, ChangeInventoryService } = require('../services/inventory');
+const { getItemsService, getInventoryService, ChangeInventoryService } = require('../services/inventory');
 
 const getInventory = async (req, res) => {
     try {
@@ -43,29 +43,16 @@ const updateInventory = async (req, res) => {
     }
 };
 
-const getItems = (req, res) => {
+const getItems = async (req, res) => {
     try {
-        res.status(200).json([{
-            itemId: 1,
-            name: 'Block of Wood',
-            description: 'A piece of wood that can be artfully transformed in construction materials, other objects or even combustible.',
-            price: 1,
-            qty: 10
-        },
-        {
-            itemId: 2,
-            name: 'Food',
-            description: 'A joint of edibles consumables that is used to feed and maintain live ones.',
-            price: 1,
-            qty: 10
-        },
-        {
-            itemId: 5,
-            name: 'Container of Water',
-            description: 'Water is used for multi-purpose activities. It\'s essencial in many processes, inclusive in maintain life.',
-            price: 1,
-            qty: 10
-        }]);
+        const response = await getItemsService();
+        if (response.message) {
+            res.status(404).json({
+                message: response.message
+            });
+        } else {
+            res.status(200).json(response);
+        }
     } catch (err) {
         console.log(err);
         res.status(500).json({

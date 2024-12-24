@@ -195,6 +195,10 @@ main {
     border-radius: 3px;
 }
 
+#market #marketOptions #marketExit {
+    margin-top: auto;
+}
+
 #market #marketPainel hr.vertical {
     border: solid 1px #333333;
     margin: 0 10px 0 10px;

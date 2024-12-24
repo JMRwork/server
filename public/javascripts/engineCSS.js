@@ -156,6 +156,7 @@ function getItemStack(refresh) {
                 console.log(response);
                 if (response.ok) {
                     const inventory = await response.json();
+                    console.log(inventory);
                     const stackInventory = { null: 0 };
                     inventory.forEach(element => { stackInventory[element] = stackInventory[element] + 1 || 1; });
                     if (stackInventory.null !== 10) {
@@ -400,16 +401,14 @@ function getActions(refresh) {
 
 function getMarket() {
     const painel = document.getElementById('painel');
-    let market;
-    if (document.getElementById('market')) {
-        market = document.getElementById('market');
+    let market = document.getElementById('market');
+    if (market) {
         painel.removeChild(market);
     } else {
-        // Mock Items
-        const items = [{ itemId: 1, name: 'Block of Wood' }, { itemId: 2, name: 'Food' }, { itemId: 5, name: 'Container of Water' }];
         market = document.createElement('div');
         market.setAttribute('id', 'market');
         market.setAttribute('class', 'mainColor mainGaps');
+        painel.append(market);
         // Market header
         const marketTitle = document.createElement('div');
         marketTitle.setAttribute('id', 'marketTitle');
@@ -420,65 +419,93 @@ function getMarket() {
         // Market Body
         const marketPainel = document.createElement('div');
         marketPainel.setAttribute('id', 'marketPainel');
-        const marketOptions = document.createElement('div');
-        marketOptions.setAttribute('id', 'marketOptions');
-        const marketVerticalDivisory = document.createElement('hr');
-        marketVerticalDivisory.setAttribute('class', 'vertical');
-        const marketChart = document.createElement('div');
-        marketChart.setAttribute('id', 'marketChart');
-        const marketOverview = document.createElement('p');
-        marketOverview.setAttribute('id', 'marketOverview');
-        marketChart.append(marketOverview);
-        marketPainel.append(marketOptions, marketVerticalDivisory, marketChart);
-        // Items Options
-        const selectItem = document.createElement('select');
-        selectItem.setAttribute('id', 'itemCategories');
-        selectItem.setAttribute('name', 'itemCategories');
-        selectItem.addEventListener('change', getItemOrder);
-        const selectLabel = document.createElement('option');
-        selectLabel.innerText = 'Select an item...';
-        selectLabel.setAttribute('disabled', true);
-        selectLabel.setAttribute('selected', true);
-        const itemCategories = items.map(item => {
-            const itemBlock = document.createElement('option');
-            itemBlock.setAttribute('value', item.itemId);
-            itemBlock.innerText = item.name;
-            return itemBlock;
-        });
-        selectItem.append(selectLabel, ...itemCategories);
-        // Options others Funcinalities
-        const storageMetersButton = document.createElement('button');
-        storageMetersButton.innerText = 'Storage Meters';
-        const assets = document.createElement('div');
-        const assetsTitle = document.createElement('h3');
-        assetsTitle.innerText = 'Current Assets:';
-        const assetsCurrency = document.createElement('p');
-        assetsCurrency.innerText = 'Currency: 0¢';
-        const assetsFreeSpace = document.createElement('p');
-        assetsFreeSpace.innerText = 'Inventory free space: 0';
-        assets.append(assetsTitle, assetsCurrency, assetsFreeSpace);
-        marketOptions.append(selectItem, storageMetersButton, assets);
+        // Append on painel
         market.append(marketTitle, marketPainel);
-        painel.append(market);
+        // Mock Items
+        fetch('/items')
+            .then(response => {
+                console.log(response);
+                return response.json();
+            })
+            .then(itemsResponse => {
+                if (itemsResponse.message) {
+                    marketPainel.innerText = itemsResponse.message;
+                    marketPainel.style.justifyContent = 'center';
+                } else {
+                    const marketOptions = document.createElement('div');
+                    marketOptions.setAttribute('id', 'marketOptions');
+                    const marketVerticalDivisory = document.createElement('hr');
+                    marketVerticalDivisory.setAttribute('class', 'vertical');
+                    const marketChart = document.createElement('div');
+                    marketChart.setAttribute('id', 'marketChart');
+                    const marketOverview = document.createElement('p');
+                    marketOverview.setAttribute('id', 'marketOverview');
+                    marketChart.append(marketOverview);
+                    marketPainel.append(marketOptions, marketVerticalDivisory, marketChart);
+                    // Items Options
+                    const selectItem = document.createElement('select');
+                    selectItem.setAttribute('id', 'itemCategories');
+                    selectItem.setAttribute('name', 'itemCategories');
+                    selectItem.addEventListener('change', (e) => { getItemOrder(e, itemsResponse); });
+                    const selectLabel = document.createElement('option');
+                    selectLabel.innerText = 'Select an item...';
+                    selectLabel.setAttribute('disabled', true);
+                    selectLabel.setAttribute('selected', true);
+                    const itemCategories = itemsResponse.map(item => {
+                        const itemBlock = document.createElement('option');
+                        itemBlock.setAttribute('value', item.item_id);
+                        itemBlock.innerText = item.name;
+                        return itemBlock;
+                    });
+                    selectItem.append(selectLabel, ...itemCategories);
+                    // Options others Funcinalities
+                    const storageMetersButton = document.createElement('button');
+                    storageMetersButton.innerText = 'Storage Meters';
+                    const assets = document.createElement('div');
+                    const assetsTitle = document.createElement('h3');
+                    assetsTitle.innerText = 'Current Assets:';
+                    const assetsCurrency = document.createElement('p');
+                    assetsCurrency.innerText = 'Currency: 0¢';
+                    const assetsFreeSpace = document.createElement('p');
+                    assetsFreeSpace.innerText = 'Inventory free space: 0';
+                    const marketExit = document.createElement('button');
+                    marketExit.setAttribute('id', 'marketExit');
+                    marketExit.innerText = 'Exit Market';
+                    marketExit.addEventListener('click', getMarket);
+                    assets.append(assetsTitle, assetsCurrency, assetsFreeSpace);
+                    marketOptions.append(selectItem, storageMetersButton, assets, marketExit);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                marketPainel.innerText = error.message;
+                marketPainel.style.justifyContent = 'center';
+            });
     }
 }
 
-function getItemOrder(event) {
-    const itemId = parseInt(this.value);
+function getItemOrder(event, items) {
+    console.log(event.target.value);
     const marketChart = document.getElementById('marketChart');
     const marketOverview = document.getElementById('marketOverview');
-    fetch('/items')
-        .then(response => { return response.json(); })
-        .then(itemData => {
-            let item;
-            itemData.forEach(itemObj => {
-                if (itemObj.itemId === itemId) {
-                    item = itemObj;
+    const itemId = parseInt(event.target.value);
+    if (items.message !== undefined) {
+        marketChart.innerText = 'Unable to get item orders.';
+        marketChart.style.textAlign = 'center';
+    } else {
+        try {
+            const item = {};
+            items.forEach(itemObj => {
+                if (itemObj.item_id === itemId) {
+                    item.id = itemObj.item_id;
+                    item.name = itemObj.name;
+                    item.description = itemObj.description;
+                    item.price = itemObj.market_price;
+                    item.qty = itemObj.market_qty;
+                    console.log(item);
+                    return item;
                 }
             });
-            return item;
-        })
-        .then(item => {
             if (marketChart.childNodes.length !== 1) {
                 const nodes = [...marketChart.childNodes];
                 for (const orderNodes of nodes) {
@@ -513,12 +540,12 @@ function getItemOrder(event) {
             marketChart.insertBefore(itemPrice, marketOverview);
             buyBt.addEventListener('click', function (e) { tradeItem('add', parseInt(marketQty.value), itemId); });
             sellBt.addEventListener('click', function (e) { tradeItem('remove', parseInt(marketQty.value), itemId); });
-        })
-        .catch(err => {
-            console.log(err);
+        } catch (error) {
+            console.log(error);
             marketChart.innerText = 'Unable to get item orders.';
             marketChart.style.textAlign = 'center';
-        });
+        }
+    }
 }
 
 function tradeItem(operation, qty, itemId) {

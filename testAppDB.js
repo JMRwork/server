@@ -25,5 +25,43 @@ async function testCreateUser(username, password) {
     }
 }
 
+async function testAddItems(items) {
+    const client = await db.connect();
+    let response;
+    try {
+        const client = await db.connect();
+        await client.query('BEGIN');
+        for (let item of items) {
+            await client.query('INSERT INTO items(name, description, market_price, market_qty) VALUES ($1, $2, $3, $4)', [item.name, item.description, item.market_price, item.market_qty]);
+        }
+        await client.query('COMMIT');
+        response = { message: 'Items added successfully' };
+    } catch (error) {
+        console.error('Error adding items:', error);
+        await client.query('ROLLBACK');
+        response = { message: 'Internal Server Error' };
+    } finally {
+        await client.release();
+        console.log(response);
+    }
+}
+
+// testAddItems([{
+//     name: 'Block of Wood',
+//     description: 'A piece of wood that can be artfully transformed in construction materials, other objects or even combustible.',
+//     market_price: 1,
+//     market_qty: 100
+// }, {
+//     name: 'Food',
+//     description: 'A joint of edibles consumables that is used to feed and maintain live ones.',
+//     market_price: 1,
+//     market_qty: 100
+// }, {
+//     name: 'Container of Water',
+//     description: 'Water is used for multi-purpose activities. It\'s essencial in many processes, inclusive in maintain life.',
+//     market_price: 1,
+//     market_qty: 100
+// }]);
+
 // testCreateUser('test', 'test');
 // testInventoryUpdate([1, 1, 1, 1, 2, 5, 5, 5, 5, 5]);

@@ -13,7 +13,7 @@ const getLocalActions = (req, res) => {
             },
             {
                 action: 'getWater',
-                value: 5,
+                value: 3,
                 textContent: 'Get Water'
             },
             {

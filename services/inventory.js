@@ -1,6 +1,17 @@
 /* eslint-disable indent */
-const { findUserItems, updateUserItems } = require('../repository/inventory');
+const { listItems, findUserItems, updateUserItems } = require('../repository/items');
 const { findUserCurrency } = require('../repository/status');
+
+async function getItemsService() {
+    const items = await listItems();
+    if (items === null) {
+        return { message: 'Error: Internal Server Error.' };
+    }
+    if (items.length === 0) {
+        return { message: 'Error: General Items Data Not Found.' };
+    }
+    return items;
+}
 
 async function getInventoryService(userId) {
     const response = await findUserItems(userId);
@@ -137,6 +148,7 @@ async function marketOperationService(userInventory, inventoryChanges, itemChang
 }
 
 module.exports = {
+    getItemsService,
     getInventoryService,
     ChangeInventoryService
 };

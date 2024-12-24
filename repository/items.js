@@ -4,6 +4,15 @@ const db = require('../config/db.js');
 /*  Refazer banco de dados do inventório.
     Remodelar modelo do inventário.
 */
+async function listItems() {
+    try {
+        const result = await db.query('SELECT * FROM items');
+        return result.rows;
+    } catch (e) {
+        console.error('Error getting items:', e);
+        return null;
+    }
+}
 
 async function findUserItems(userId) {
     try {
@@ -41,6 +50,7 @@ async function updateUserItems(inventoryNewState, userId) {
 }
 
 module.exports = {
+    listItems,
     findUserItems,
     updateUserItems
 };

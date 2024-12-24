@@ -7,7 +7,6 @@ async function loginService(username, password) {
     if (response.successful === false) {
         return { message: response.error };
     }
-    console.log('aqui');
     const user = response.user;
     console.log(user);
     if (user.password === password) {

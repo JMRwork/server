@@ -5,10 +5,10 @@ const getInventory = async (req, res) => {
         const userSessionId = req.session.id;
         if (userSessionId) {
             const response = await getInventoryService(userSessionId);
-            if (response.sucessful) {
-                res.status(200).json(response.userInventory);
-            } else {
+            if (response.error) {
                 res.status(404).json({ message: response.error });
+            } else {
+                res.status(200).json(response);
             }
         } else {
             res.status(401).json({
@@ -46,10 +46,9 @@ const updateInventory = async (req, res) => {
 const getItems = async (req, res) => {
     try {
         const response = await getItemsService();
+        console.log(response);
         if (response.message) {
-            res.status(404).json({
-                message: response.message
-            });
+            res.status(404).json(response);
         } else {
             res.status(200).json(response);
         }

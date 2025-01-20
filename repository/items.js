@@ -1,9 +1,6 @@
 /* eslint-disable indent */
 const db = require('../config/db.js');
 
-/*  Refazer banco de dados do inventório.
-    Remodelar modelo do inventário.
-*/
 async function listItems() {
     try {
         const result = await db.query('SELECT * FROM items');
@@ -14,36 +11,80 @@ async function listItems() {
     }
 }
 
-async function findUserItems(userId) {
+async function getItem(itemId) {
     try {
-        const result = await db.query('SELECT * FROM inventories WHERE user_id = $1', [userId]);
+        const result = await db.query('SELECT * FROM items WHERE item_id = $1', [itemId]);
         let response;
-        console.log(result.rows[0]);
         switch (result.rowCount) {
-            case 1:
-                response = { sucessful: true, error: null, userInventoryObj: result.rows[0] };
-                return response;
             case 0:
-                response = { sucessful: false, error: 'Error: Not Found. This user doesn\'t have an inventory associated to it.' };
-                return response;
+                response = { error: 'Item Data not Found.' };
+                break;
             default:
-                response = { sucessful: false, error: 'Error: Conflict. Multiples inventories associated to same user' };
-                return response;
+                response = result.rows[0];
         }
+        return response;
     } catch (e) {
-        console.error('Error getting user items:', e);
-        const response = { sucessful: false, error: e };
+        console.error('Error getting item:', e);
+        const response = { error: 'Internal Server Error.' };
         return response;
     }
 }
 
-async function updateUserItems(inventoryNewState, userId) {
+async function findUserItems(userId) {
     try {
-        await db.query('UPDATE inventories SET itemid1 = $1, itemid2 = $2, itemid3 = $3, itemid4 = $4, itemid5 = $5, itemid6 = $6, itemid7 = $7, itemid8 = $8, itemid9 = $9, itemid10 = $10 WHERE user_id = $11', [...inventoryNewState, userId]);
-        const response = { Sucessful: true, error: null };
+        const result = await db.query('SELECT * FROM users_items WHERE user_id = $1', [userId]);
+        console.log(result.rows);
+        const response = result.rows;
         return response;
     } catch (e) {
-        console.error('Error updating user inventory:', e);
+        console.error('Error getting user items:', e);
+        const response = { error: 'Internal Server Error.' };
+        return response;
+    }
+}
+
+// Currency change added there and in removeUserItems
+async function insertNewUserItems(itemChanged, currencyChanged, userId) {
+    try {
+        const values = [];
+        let sql = 'INSERT INTO users_items ( user_id, item_id ) VALUES ';
+        for (let i = 0; i < itemChanged.qty; i++) {
+            values.push(userId, itemChanged.itemId);
+            sql += `($${i * 2 + 1}, $${i * 2 + 2}),`;
+        }
+        sql = sql.slice(0, -1);
+        await db.query('BEGIN');
+        await db.query(sql, [...values]);
+        if (currencyChanged.state === true) {
+            const newCurrency = currencyChanged.userCurrency - currencyChanged.totalValue;
+            await db.query('UPDATE users_status SET currency = $1 WHERE user_id = $2', [newCurrency, userId]);
+        }
+        await db.query('COMMIT');
+        const response = { Sucessful: true };
+        return response;
+    } catch (e) {
+        console.error('Error on inserting items on user inventory:', e);
+        await db.query('ROLLBACK');
+        const response = { Sucessful: false, error: 'Internal Server Error' };
+        return response;
+    }
+}
+
+async function removeUserItems(itemChanged, currencyChanged, userId) {
+    try {
+        console.log(itemChanged, currencyChanged, userId);
+        await db.query('BEGIN');
+        await db.query('WITH items_to_delete AS (SELECT users_items.ctid FROM users_items WHERE user_id = $1 AND item_id = $2 LIMIT $3) DELETE FROM users_items USING items_to_delete WHERE users_items.ctid = items_to_delete.ctid', [userId, itemChanged.itemId, itemChanged.qty]);
+        if (currencyChanged.state === true) {
+            const newCurrency = currencyChanged.userCurrency + currencyChanged.totalValue;
+            await db.query('UPDATE users_status SET currency = $1 WHERE user_id = $2', [newCurrency, userId]);
+        }
+        await db.query('COMMIT');
+        const response = { Sucessful: true };
+        return response;
+    } catch (e) {
+        console.error('Error on removing items from user inventory:', e);
+        await db.query('ROLLBACK');
         const response = { Sucessful: false, error: 'Internal Server Error' };
         return response;
     }
@@ -51,6 +92,8 @@ async function updateUserItems(inventoryNewState, userId) {
 
 module.exports = {
     listItems,
+    getItem,
     findUserItems,
-    updateUserItems
+    insertNewUserItems,
+    removeUserItems
 };

@@ -10,15 +10,15 @@ const login = async (req, res) => {
         } else {
             const response = await loginService(username, password);
             console.log(response);
-            if (response.user) {
-                req.session.id = response.user.id;
-                req.session.username = response.user.username;
-                res.cookie('u_on', true);
-                res.status(200).redirect('/home');
-            } else {
+            if (response.message) {
                 res.status(401).json({
                     message: response.message
                 });
+            } else {
+                req.session.id = response.id;
+                req.session.username = response.username;
+                res.cookie('u_on', true);
+                res.status(302).redirect('/home');
             }
         }
     } catch (err) {

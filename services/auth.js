@@ -1,16 +1,13 @@
 const { findUserByUsername } = require('../repository/users');
 
 async function loginService(username, password) {
-    console.log(username);
     const response = await findUserByUsername(username);
     console.log(response);
-    if (response.successful === false) {
+    if (response.error) {
         return { message: response.error };
     }
-    const user = response.user;
-    console.log(user);
-    if (user.password === password) {
-        return { user };
+    if (response.password === password) {
+        return response;
     } else {
         return { message: 'Credentials not correct.' };
     }

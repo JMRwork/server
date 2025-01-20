@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const db = require('./config/db');
 
 async function testInventoryUpdate(newInventory) {
@@ -21,6 +22,7 @@ async function testCreateUser(username, password) {
     } finally {
         await client.release();
         console.log(response);
+        // eslint-disable-next-line no-unsafe-finally
         return response;
     }
 }
@@ -31,13 +33,42 @@ async function testAddItems(items) {
     try {
         const client = await db.connect();
         await client.query('BEGIN');
-        for (let item of items) {
-            await client.query('INSERT INTO items(name, description, market_price, market_qty) VALUES ($1, $2, $3, $4)', [item.name, item.description, item.market_price, item.market_qty]);
+        if (Array.isArray(items)) {
+            for (const item of items) {
+                await client.query('INSERT INTO items(name, description, market_price, market_qty) VALUES ($1, $2, $3, $4)', [item.name, item.description, item.market_price, item.market_qty]);
+            }
+        } else {
+            await client.query('INSERT INTO items(name, description, market_price, market_qty) VALUES ($1, $2, $3, $4)', [items.name, items.description, items.market_price, items.market_qty]);
         }
         await client.query('COMMIT');
         response = { message: 'Items added successfully' };
     } catch (error) {
         console.error('Error adding items:', error);
+        await client.query('ROLLBACK');
+        response = { message: 'Internal Server Error' };
+    } finally {
+        await client.release();
+        console.log(response);
+    }
+}
+
+async function testAddActions(actions) {
+    const client = await db.connect();
+    let response;
+    try {
+        const client = await db.connect();
+        await client.query('BEGIN');
+        if (Array.isArray(actions)) {
+            for (const action of actions) {
+                await client.query('INSERT INTO actions(item_id, name) VALUES ($1, $2)', [action.item_id, action.name]);
+            }
+        } else {
+            await client.query('INSERT INTO actions(item_id, name) VALUES ($1, $2)', [actions.item_id, actions.name]);
+        }
+        await client.query('COMMIT');
+        response = { message: 'Actions added successfully' };
+    } catch (error) {
+        console.error('Error adding actions:', error);
         await client.query('ROLLBACK');
         response = { message: 'Internal Server Error' };
     } finally {
@@ -62,6 +93,20 @@ async function testAddItems(items) {
 //     market_price: 1,
 //     market_qty: 100
 // }]);
+
+testAddActions([
+    {
+        item_id: 1,
+        name: 'Get Wood'
+    },
+    {
+        item_id: 2,
+        name: 'Farm food'
+    },
+    {
+        item_id: 3,
+        name: 'Get Water'
+    }]);
 
 // testCreateUser('test', 'test');
 // testInventoryUpdate([1, 1, 1, 1, 2, 5, 5, 5, 5, 5]);

@@ -109,15 +109,21 @@ main {
     justify-content: space-evenly;
 }
 
-#dashboard #dashboardChart #dashboardCurrency {}
+/*
+ #dashboard #dashboardChart #dashboardCurrency {}
 
 #dashboard #dashboardChart #dashboardInventory {}
 
 #dashboard #dashboardChart #dashboardLocation {}
 
 #dashboard #dashboardChart #dashboardMission {}
+*/
+#dashboard #dashboardChart #dashboardMission #dashboardMissionSelect {
+    background-color: #333333;
+    border-radius: 3px;
+}
 
-#dashboard #dashboardChart #dashboardResearch {}
+/* #dashboard #dashboardChart #dashboardResearch {} */
 
 #actions {
     display: flex;

@@ -8,7 +8,6 @@ async function getAllUsers() {
         return result.rows;
     } catch (error) {
         console.error('Error getting all users:', error);
-        throw new Error('Could not retrieve users');
     }
 }
 
@@ -16,20 +15,19 @@ async function findUserByUsername(username) {
     try {
         const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
         let response;
-        console.log(result.rowCount);
+        console.log(result);
         switch (result.rowCount) {
             case 1:
-                response = { sucessful: true, error: null, user: result.rows[0] };
+                response = result.rows[0];
                 break;
             default:
-                response = { sucessful: false, error: 'Credentials not correct.' };
+                response = { error: 'Credentials not correct.' };
                 break;
         }
-        console.log(response);
         return response;
     } catch (error) {
         console.error(`Error getting user by username ${username}:`, error);
-        return { sucessful: false, error: 'Internal Server Error' };
+        return { error: 'Internal Server Error' };
     }
 }
 
@@ -61,8 +59,8 @@ async function updateUser(id, user) {
         const result = await db.query(query, values);
         return result.rows[0];
     } catch (error) {
-        console.error(`Error updating user with id ${id}:`, error);
-        throw new Error('Could not update user');
+        console.error('Error updating user with id:', error);
+        return { error: 'Could not update user.' };
     }
 }
 
@@ -72,8 +70,8 @@ async function deleteUser(id) {
         await db.query(query, [id]);
         return { message: 'User deleted successfully' };
     } catch (error) {
-        console.error(`Error deleting user with id ${id}:`, error);
-        throw new Error('Could not delete user');
+        console.error('Error deleting user with id:', error);
+        return { error: 'Could not delete user' };
     }
 }
 

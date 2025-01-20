@@ -1,26 +1,20 @@
-const getLocalActions = (req, res) => {
+const { getLocalActionsService } = require('../services/actions');
+
+const getLocalActions = async (req, res) => {
     try {
-        res.status(200).json([
-            {
-                action: 'getWood',
-                value: 1,
-                textContent: 'Get Wood'
-            },
-            {
-                action: 'getFood',
-                value: 2,
-                textContent: 'Farm food'
-            },
-            {
-                action: 'getWater',
-                value: 3,
-                textContent: 'Get Water'
-            },
-            {
-                action: 'getMarket',
-                value: null,
-                textContent: 'Market'
-            }]);
+        const userId = req.session.id;
+        if (userId) {
+            const response = await getLocalActionsService(userId);
+            if (response.message) {
+                res.status(500).json(response);
+            } else {
+                res.status(200).json(response);
+            }
+        } else {
+            res.status(401).json({
+                message: 'User need to be authenticated.'
+            });
+        }
     } catch (err) {
         console.log(err);
         res.status(500).json({

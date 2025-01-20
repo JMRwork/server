@@ -62,10 +62,13 @@ function loginFetch(event) {
 
     fetch('/login', loginFetchOptions)
         .then(response => {
+            console.log(response);
             if (response.redirected) {
                 window.location.href = response.url;
+                return {};
+            } else {
+                return response.json();
             }
-            return response.json();
         })
         .then(obj => {
             if (obj.message) {
@@ -155,11 +158,14 @@ function getItemStack(refresh) {
             .then(async response => {
                 console.log(response);
                 if (response.ok) {
-                    const inventory = await response.json();
+                    const userInventory = await response.json();
+                    const inventory = userInventory.inventory;
+                    const inventoryCap = userInventory.inventoryCap;
                     console.log(inventory);
                     const stackInventory = { null: 0 };
                     inventory.forEach(element => { stackInventory[element] = stackInventory[element] + 1 || 1; });
-                    if (stackInventory.null !== 10) {
+                    console.log(stackInventory);
+                    if (stackInventory.null !== inventoryCap) {
                         return stackInventory;
                     } else {
                         return {
@@ -182,9 +188,9 @@ function getItemStack(refresh) {
                                 const items = [];
                                 for (const element in stackInventory) {
                                     itemData.forEach(itemObj => {
-                                        if (element === itemObj.itemId.toString()) {
+                                        if (element === itemObj.item_id.toString()) {
                                             const item = [];
-                                            item.push(itemObj.itemId);
+                                            item.push(itemObj.item_id);
                                             item.push(itemObj.name);
                                             item.push(stackInventory[element]);
                                             item.push(itemObj.description);
@@ -192,6 +198,7 @@ function getItemStack(refresh) {
                                         }
                                     });
                                 }
+                                console.log(items);
                                 return items;
                             } else {
                                 return response.json();
@@ -204,7 +211,8 @@ function getItemStack(refresh) {
                                 const table = document.createElement('table');
                                 const rows = [];
                                 const stackInventoryLength = Object.keys(stackInventory).length;
-                                for (let i = 0; i < stackInventoryLength; i++) {
+                                // Change to i < stackInventoryLength
+                                for (let i = 0; i < obj.length + 1; i++) {
                                     rows[i] = document.createElement('tr');
                                     if (i === 0) {
                                         const itemHeaders = [];
@@ -262,7 +270,7 @@ function updateItems(action, emiter) {
         });
 }
 
-function gatheringAction(event) {
+function gatheringAction() {
     const action = {
         operation: 'add',
         origin: 'actions',
@@ -271,8 +279,15 @@ function gatheringAction(event) {
     };
     const emiter = 'actionOverview';
     updateItems(action, emiter);
-    setTimeout(() => getItemStack(true), 500);
-}
+    setTimeout(() => {
+        if (document.getElementById('itemList')) {
+            getItemStack(true);
+        }
+        if (document.getElementById('Dashboard')) {
+            getDashboard(true);
+        }
+    }, 500);
+};
 
 function getDashboard(refresh) {
     const painel = document.getElementById('painel');
@@ -295,50 +310,73 @@ function getDashboard(refresh) {
             .then(response => {
                 return response.json();
             })
-            .then(status => {
+            .then(async status => {
                 const dashboardTitle = document.createElement('h3');
                 dashboardTitle.innerText = 'Dashboard';
                 dashboardTitle.setAttribute('id', 'dashboardTitle');
                 const dashboardChart = document.createElement('div');
                 dashboardChart.setAttribute('id', 'dashboardChart');
                 dashboard.replaceChildren(dashboardTitle, dashboardChart);
+                if (status.message) {
+                    dashboardChart.innerText = status.message;
+                    return;
+                }
                 // Body
+                // currency status
                 const dashboardCurrency = document.createElement('p');
                 dashboardCurrency.setAttribute('id', 'dashboardCurrency');
                 dashboardCurrency.innerText = `Currency: ${status.currency} ¢`;
+                // inventory status
                 const dashboardInventoryStack = document.createElement('p');
                 dashboardInventoryStack.setAttribute('id', 'dashboardInventory');
-                dashboardInventoryStack.innerText = `Free Inventory: ${status.inventory}/10`;
+                if (status.message) {
+                    dashboardInventoryStack.innerText = status.message;
+                } else {
+                    dashboardInventoryStack.innerText = `Inventory Capacity Used: 
+                    ${status.count}/${status.inventory_cap}`;
+                }
+                // location status
                 const dashboardLocation = document.createElement('p');
                 dashboardLocation.setAttribute('id', 'dashboardLocation');
                 dashboardLocation.innerText = `Location sector: ${status.location}`;
+                // mission status
                 const dashboardMission = document.createElement('div');
                 dashboardMission.setAttribute('id', 'dashboardMission');
-                dashboardMission.innerText = 'Actual Mission: ';
-                const dashboardMissionSelect = document.createElement('select');
-                dashboardMissionSelect.setAttribute('id', 'dashboardMissionSelect');
-                dashboardMissionSelect.addEventListener('change', (event) => {
-                    const missionStep = document.getElementById('dashboardMissionStep');
-                    for (let i = 0; i < status.missionStatus.length; i++) {
-                        if (status.missionStatus[i].missionId === parseInt(event.target.value)) {
-                            missionStep.innerText = status.missionStatus[i].missionStep;
+                if (status.missionStatus.error) {
+                    dashboardMission.innerText = status.missionStatus.error;
+                } else {
+                    dashboardMission.innerText = 'Actual Mission: ';
+                    const dashboardMissionSelect = document.createElement('select');
+                    dashboardMissionSelect.setAttribute('id', 'dashboardMissionSelect');
+                    dashboardMissionSelect.addEventListener('change', (event) => {
+                        const missionStep = document.getElementById('dashboardMissionStep');
+                        for (let i = 0; i < status.missionStatus.length; i++) {
+                            if (status.missionStatus[i].missionId === parseInt(event.target.value)) {
+                                missionStep.innerText = status.missionStatus[i].missionStep;
+                            }
                         }
-                    }
-                });
-                status.missionStatus.forEach((mission) => {
-                    const option = document.createElement('option');
-                    option.value = mission.missionId;
-                    option.innerText = mission.missionId;
-                    dashboardMissionSelect.appendChild(option);
-                });
-                const dashboardMissionStep = document.createElement('p');
-                dashboardMissionStep.setAttribute('id', 'dashboardMissionStep');
-                dashboardMissionStep.innerText = `This is the current Step: ${status.missionStatus[0].missionStep}`;
+                    });
+                    const selectLabel = document.createElement('option');
+                    selectLabel.innerText = 'Select a Mission...';
+                    selectLabel.setAttribute('disabled', true);
+                    selectLabel.setAttribute('selected', true);
+                    dashboardMissionSelect.appendChild(selectLabel);
+                    status.missionStatus.forEach((mission) => {
+                        const option = document.createElement('option');
+                        option.value = mission.missionId;
+                        option.innerText = mission.missionId;
+                        dashboardMissionSelect.appendChild(option);
+                    });
+                    const dashboardMissionStep = document.createElement('p');
+                    dashboardMissionStep.setAttribute('id', 'dashboardMissionStep');
+                    dashboardMissionStep.innerText = 'There should come the current Mission Step.';
+                    dashboardMission.append(dashboardMissionSelect, dashboardMissionStep);
+                }
                 dashboardChart.append(dashboardCurrency, dashboardInventoryStack, dashboardLocation, dashboardMission);
-                dashboardMission.append(dashboardMissionSelect, dashboardMissionStep);
             })
             .catch(error => {
-                dashboard.innerText = 'Unable to get Dashboard';
+                const dashboardChart = document.getElementById('dashboardChart');
+                dashboardChart.innerText = 'Unable to get Dashboard';
                 console.log(error);
             });
     }
@@ -364,8 +402,15 @@ function getActions(refresh) {
     actionOverview.setAttribute('id', 'actionOverview');
     if (doFecth) {
         fetch('/localActions')
-            .then(response => { return response.json(); })
-            .then(actions => {
+            .then(response => {
+                return response.json();
+            })
+            .then(actionsResponse => {
+                console.log(actionsResponse);
+                if (actionsResponse.message) {
+                    actionsPainel.textContent = actionsResponse.message;
+                    return;
+                }
                 const qtyLabel = document.createElement('div');
                 qtyLabel.id = 'QtyLabel';
                 const textLabel = document.createElement('label');
@@ -377,11 +422,12 @@ function getActions(refresh) {
                 qtyLabel.append(textLabel, inputLabel);
                 actionsPainel.replaceChildren(qtyLabel, actionOverview);
                 const actionsButtons = [];
-                for (let i = 0; i < actions.length; i++) {
+                for (let i = 0; i < actionsResponse.localActions.length; i++) {
+                    const respectiveAction = actionsResponse.actions.filter(action => action.action_id === actionsResponse.localActions[i].action_id)[0];
+                    console.log(respectiveAction);
                     actionsButtons[i] = document.createElement('button');
-                    actionsButtons[i].setAttribute('id', actions[i].action);
-                    actionsButtons[i].setAttribute('value', actions[i].value);
-                    actionsButtons[i].textContent = actions[i].textContent;
+                    actionsButtons[i].value = respectiveAction.item_id;
+                    actionsButtons[i].textContent = respectiveAction.name;
                     actionsPainel.insertBefore(actionsButtons[i], qtyLabel);
                 }
                 actionsButtons.forEach(button => {
@@ -427,7 +473,7 @@ function getMarket() {
                 console.log(response);
                 return response.json();
             })
-            .then(itemsResponse => {
+            .then(async itemsResponse => {
                 if (itemsResponse.message) {
                     marketPainel.innerText = itemsResponse.message;
                     marketPainel.style.justifyContent = 'center';
@@ -461,18 +507,11 @@ function getMarket() {
                     // Options others Funcinalities
                     const storageMetersButton = document.createElement('button');
                     storageMetersButton.innerText = 'Storage Meters';
-                    const assets = document.createElement('div');
-                    const assetsTitle = document.createElement('h3');
-                    assetsTitle.innerText = 'Current Assets:';
-                    const assetsCurrency = document.createElement('p');
-                    assetsCurrency.innerText = 'Currency: 0¢';
-                    const assetsFreeSpace = document.createElement('p');
-                    assetsFreeSpace.innerText = 'Inventory free space: 0';
+                    const assets = await getAssets();
                     const marketExit = document.createElement('button');
                     marketExit.setAttribute('id', 'marketExit');
                     marketExit.innerText = 'Exit Market';
                     marketExit.addEventListener('click', getMarket);
-                    assets.append(assetsTitle, assetsCurrency, assetsFreeSpace);
                     marketOptions.append(selectItem, storageMetersButton, assets, marketExit);
                 }
             })
@@ -481,6 +520,34 @@ function getMarket() {
                 marketPainel.innerText = error.message;
                 marketPainel.style.justifyContent = 'center';
             });
+    }
+}
+
+async function getAssets() {
+    if (!document.getElementById('assets')) {
+        const assets = document.createElement('div');
+        assets.setAttribute('id', 'assets');
+        const assetsTitle = document.createElement('h3');
+        const assetsResponse = await fetch('/status').then(response => response.json());
+        if (!assetsResponse.message) {
+            assetsTitle.innerText = 'Current Assets:';
+            const assetsCurrency = document.createElement('p');
+            assetsCurrency.innerText = `Currency: ${assetsResponse.currency}¢`;
+            const assetsFreeSpace = document.createElement('p');
+            assetsFreeSpace.innerText = `Inventory free space: ${assetsResponse.inventoryCap - assetsResponse.count}`;
+            assets.append(assetsTitle, assetsCurrency, assetsFreeSpace);
+        } else {
+            assetsTitle.innerText = assetsResponse.message;
+        }
+        return assets;
+    } else {
+        const assetsResponse = await fetch('/status').then(response => response.json());
+        const assets = document.getElementById('assets');
+        const assetsCurrency = document.querySelector('#assets p:nth-of-type(1)');
+        const assetsFreeSpace = document.querySelector('#assets p:nth-of-type(2)');
+        assetsCurrency.innerText = `Currency: ${assetsResponse.currency}¢`;
+        assetsFreeSpace.innerText = `Inventory free space: ${assetsResponse.inventoryCap - assetsResponse.count}`;
+        return assets;
     }
 }
 
@@ -530,7 +597,7 @@ function getItemOrder(event, items) {
             marketQtyName.textContent = 'Quantity: ';
             const marketQty = document.createElement('input');
             marketQty.id = 'marketQty';
-            marketQty.value = '1';
+            marketQty.value = 1;
             marketQtyLabel.append(marketQtyName, marketQty);
             const itemPrice = document.createElement('span');
             itemPrice.textContent = `Price: ${item.price}¢ each`;
@@ -538,8 +605,8 @@ function getItemOrder(event, items) {
             marketChart.insertBefore(orderBtns, marketOverview);
             marketChart.insertBefore(marketQtyLabel, marketOverview);
             marketChart.insertBefore(itemPrice, marketOverview);
-            buyBt.addEventListener('click', function (e) { tradeItem('add', parseInt(marketQty.value), itemId); });
-            sellBt.addEventListener('click', function (e) { tradeItem('remove', parseInt(marketQty.value), itemId); });
+            buyBt.addEventListener('click', function (e) { tradeItem('add', parseInt(marketQty.value), parseInt(itemId)); });
+            sellBt.addEventListener('click', function (e) { tradeItem('remove', parseInt(marketQty.value), parseInt(itemId)); });
         } catch (error) {
             console.log(error);
             marketChart.innerText = 'Unable to get item orders.';
@@ -557,7 +624,15 @@ function tradeItem(operation, qty, itemId) {
     };
     const emiter = 'marketOverview';
     updateItems(action, emiter);
-    setTimeout(() => getItemStack(true), 500);
+    setTimeout(() => {
+        if (document.getElementById('itemList')) {
+            getItemStack(true);
+        }
+        if (document.getElementById('dashboard')) {
+            getDashboard(true);
+        }
+        getAssets();
+    }, 500);
 }
 function getResearch(refresh) {
     const painel = document.getElementById('painel');

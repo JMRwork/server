@@ -1,10 +1,11 @@
 const { getItemsService, getInventoryService, ChangeInventoryService } = require('../services/inventory');
+const { verifySession } = require('../middleware/session');
 
 const getInventory = async (req, res) => {
     try {
-        const userSessionId = req.session.id;
-        if (userSessionId) {
-            const response = await getInventoryService(userSessionId);
+        const userId = verifySession(req, res);
+        if (userId) {
+            const response = await getInventoryService(userId);
             if (response.error) {
                 res.status(404).json({ message: response.error });
             } else {
@@ -25,7 +26,7 @@ const getInventory = async (req, res) => {
 
 const updateInventory = async (req, res) => {
     try {
-        const userId = req.session.id;
+        const userId = verifySession(req, res);
         if (userId) {
             const inventoryChanges = req.body;
             const response = await ChangeInventoryService(userId, inventoryChanges);

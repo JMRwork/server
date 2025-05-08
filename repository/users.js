@@ -15,7 +15,6 @@ async function findUserByUsername(username) {
     try {
         const result = await db.query('SELECT * FROM users WHERE username = $1', [username]);
         let response;
-        console.log(result);
         switch (result.rowCount) {
             case 1:
                 response = result.rows[0];

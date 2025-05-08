@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Engine CSS</title>
     <link rel="stylesheet" href="style/engineCSS.css">
+    <script src="/socket.io/socket.io.js" defer></script>
     <script src="javascripts/engineCSS.js" defer></script>
 </head>
 
@@ -14,10 +15,10 @@
     <!-- <a href="#" class="ads">Propaganda</a> -->
     <div class="container">
         <nav>
-            <h1 class="logo">Navegador <button onclick="showBar(true)">showBar</button></h1>
+            <h1 class="logo">Navegador</h1>
             <ul>
                 <li><a href="/home" class="butaoTopo">Home</a></li>
-                <li><a href="/game" class="butaoTopo">Game</a></li>
+                <li><a href="/game" class="butaoTopo">Play</a></li>
                 <li><a href="/about" class="butaoTopo">About</a></li>
                 <li><a href="/login" class="butaoTopo">Login</a></li>
             </ul>
@@ -30,6 +31,7 @@
                 <li><a href="#Map" class="butaoEsquerda">Map</a></li>
                 <li><a href="#Missions" class="butaoEsquerda">Missions</a></li>
                 <li><a href="#Research" class="butaoEsquerda" onclick="">Research</a></li>
+                <li><a href="#Communication" class="butaoEsquerda" onclick="getChat(false)">Communication</a></li>
             </ul>
         </aside>
         <main>

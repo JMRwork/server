@@ -1,26 +1,27 @@
 const path = require('path');
-const file = path.join(__dirname, '../public/engineCSS.html');
-const loginHTML = path.join(__dirname, '../public/login.html');
-const registerHTML = path.join(__dirname, '../public/register.html');
+const engine = path.join(__dirname, '../public/engineCSS.html');
+const index = path.join(__dirname, '../public/index.html');
+const login = path.join(__dirname, '../public/login.html');
+const register = path.join(__dirname, '../public/register.html');
 
 const getHome = (req, res) => {
-    res.status(200).sendFile(file);
+    res.status(200).sendFile(index);
 };
 
 const getGame = (req, res) => {
-    res.status(200).sendFile(file);
+    res.status(200).sendFile(engine);
 };
 
 const getAbout = (req, res) => {
-    res.status(200).sendFile(file);
+    res.status(200).sendFile(index);
 };
 
 const getLogin = (req, res) => {
-    res.status(200).sendFile(loginHTML);
+    res.status(200).sendFile(login);
 };
 
 const getRegister = (req, res) => {
-    res.status(200).sendFile(registerHTML);
+    res.status(200).sendFile(register);
 };
 
 module.exports = {

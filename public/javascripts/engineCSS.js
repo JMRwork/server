@@ -1,42 +1,60 @@
 /* eslint-disable no-unused-vars */
-let userOn = false;
 window.onload = inicialize();
 function inicialize() {
-    if (document.cookie.includes('u_on=true')) {
-        userOn = true;
-    }
-    toggleLogin();
-    showBar(false);
-    if (!document.getElementById('submitBt')) {
+    const userOn = document.cookie.includes('u_on=true');
+    toggleLogin(userOn);
+    if (window.location.pathname === '/game') {
         getDashboard(false);
+        getChat(true);
+    } else if (window.location.pathname === '/login' || window.location.pathname === '/register') {
+        setEnterShortcut();
+        const submitAction = document.getElementById('submitBt');
+        if (submitAction.textContent === 'login') {
+            submitAction.addEventListener('click', loginFetch);
+        } else {
+            submitAction.addEventListener('click', registerFetch);
+        }
     }
 }
 
-function toggleLogin() {
-    const button =
-        document.querySelectorAll('.butaoTopo');
-    if (userOn) {
+function toggleLogin(condition) {
+    if (condition) {
+        const button = document.querySelectorAll('.butaoTopo');
+        button[0].target = '_blank';
+        button[2].target = '_blank';
         button[3].innerHTML = 'Logout';
         button[3].href = '/logout';
-    } else {
-        button[3].innerHTML = 'Login';
-        button[3].href = '/login';
     }
 }
 
-function showBar(isTest) {
+function setEnterShortcut() {
+    const inputs = document.getElementsByTagName('input');
+    for (let i = 0; i < inputs.length; i++) {
+        inputs[i].addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                if (e.target.id === 'username') {
+                    document.getElementById('password').focus();
+                } else if (e.target.id === 'password') {
+                    if (document.getElementById('submitBt').textContent === 'login') {
+                        loginFetch(e);
+                    } else {
+                        document.getElementById('repeatPassword').focus();
+                    }
+                } else if (e.target.id === 'repeatPassword') {
+                    registerFetch(e);
+                }
+            }
+        });
+    }
+}
+
+function showBar(userOn) {
     const bar =
         document.querySelector('aside');
     if (userOn) {
         bar.style.display = 'block';
-        if (isTest) {
-            userOn = false;
-        }
     } else {
         bar.style.display = 'none';
-        if (isTest) {
-            userOn = true;
-        }
     }
 }
 
@@ -126,15 +144,6 @@ function registerFetch(event) {
             });
     }
 };
-
-if (document.getElementById('submitBt')) {
-    const submitAction = document.getElementById('submitBt');
-    if (submitAction.textContent === 'login') {
-        submitAction.addEventListener('click', loginFetch);
-    } else {
-        submitAction.addEventListener('click', registerFetch);
-    }
-}
 
 function getItemStack(refresh) {
     const painel = document.getElementById('painel');
@@ -590,20 +599,23 @@ function getItemOrder(event, items) {
             const sellBt = document.createElement('button');
             sellBt.innerText = 'Sell';
             sellBt.value = item.id;
-            orderBtns.appendChild(buyBt);
-            orderBtns.appendChild(sellBt);
             const marketQtyLabel = document.createElement('div');
-            const marketQtyName = document.createElement('span');
-            marketQtyName.textContent = 'Quantity: ';
+            const marketQtyName = document.createElement('div');
+            marketQtyName.textContent = 'Qty: ';
             const marketQty = document.createElement('input');
             marketQty.id = 'marketQty';
             marketQty.value = 1;
             marketQtyLabel.append(marketQtyName, marketQty);
+            orderBtns.appendChild(buyBt);
+            orderBtns.appendChild(sellBt);
+            const orderLabel = document.createElement('div');
+            orderLabel.setAttribute('id', 'orderLabel');
+            orderLabel.appendChild(orderBtns);
+            orderLabel.appendChild(marketQtyLabel);
             const itemPrice = document.createElement('span');
             itemPrice.textContent = `Price: ${item.price}¢ each`;
             marketChart.insertBefore(itemName, marketOverview);
-            marketChart.insertBefore(orderBtns, marketOverview);
-            marketChart.insertBefore(marketQtyLabel, marketOverview);
+            marketChart.insertBefore(orderLabel, marketOverview);
             marketChart.insertBefore(itemPrice, marketOverview);
             buyBt.addEventListener('click', function (e) { tradeItem('add', parseInt(marketQty.value), parseInt(itemId)); });
             sellBt.addEventListener('click', function (e) { tradeItem('remove', parseInt(marketQty.value), parseInt(itemId)); });
@@ -650,4 +662,211 @@ function getResearch(refresh) {
         researchPainel.setAttribute('class', 'mainColor mainGaps');
         painel.appendChild(researchPainel);
     }
+}
+
+function getChat(refresh) {
+    const painel = document.getElementById('painel');
+    let chat = document.getElementById('chat');
+    if (!chat) {
+        chat = document.createElement('div');
+        chat.setAttribute('id', 'chat');
+        chat.setAttribute('class', 'mainColor mainGaps');
+        const chatTitle = document.createElement('div');
+        chatTitle.innerText = 'Communication';
+        chatTitle.setAttribute('id', 'chatTitle');
+        const chatChart = document.createElement('div');
+        const chatDivisory = document.createElement('hr');
+        chatChart.setAttribute('id', 'chatChart');
+        const chatInput = document.createElement('textarea');
+        chatInput.setAttribute('id', 'chatInput');
+        chatInput.setAttribute('placeholder', 'Type your message...');
+        chatInput.setAttribute('autocomplete', 'off');
+        const chatMessages = document.createElement('div');
+        chatMessages.setAttribute('id', 'chatMessages');
+        setupDragging(chat, chatTitle);
+        chat.replaceChildren(chatTitle, chatDivisory, chatChart);
+        chatChart.replaceChildren(chatMessages, chatInput);
+        setWindowResizable(chat);
+        painel.appendChild(chat);
+        setWindowPosition(chat);
+    }
+    if (refresh) {
+        try {
+            const socket = connectSocket();
+            const chatInput = document.getElementById('chatInput');
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const message = chatInput.value;
+                    if (message) {
+                        socket.emit('message', message);
+                        chatInput.value = '';
+                    }
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            const chatChart = document.getElementById('chatChart');
+            chatChart.style.textAlign = 'center';
+            chatChart.innerText = 'Unable to connect to chat server.';
+        }
+    } else {
+        if (chat.style.display === 'none') {
+            chat.style.display = 'flex';
+        } else {
+            chat.style.display = 'none';
+        }
+    }
+}
+
+function setupDragging(window, windowDragElement) {
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    windowDragElement.addEventListener('mousedown', startDrag);
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('mousemove', drag);
+
+    function startDrag(e) {
+        isDragging = true;
+        document.body.style.userSelect = 'none';
+        windowDragElement.style.cursor = 'grabbing';
+        offsetX = e.clientX - window.offsetLeft;
+        offsetY = e.clientY - window.offsetTop;
+    }
+
+    function stopDrag() {
+        document.body.style.userSelect = 'auto';
+        windowDragElement.style.cursor = 'auto';
+        isDragging = false;
+    }
+
+    function drag(e) {
+        if (isDragging) {
+            window.style.left = `${e.clientX - offsetX}px`;
+            window.style.top = `${e.clientY - offsetY}px`;
+        }
+    }
+}
+
+function setWindowResizable(window) {
+    const resizeTop = document.createElement('div');
+    const resizeTopLeft = document.createElement('div');
+    const resizeTopRight = document.createElement('div');
+    const resizeLeft = document.createElement('div');
+    const resizeRight = document.createElement('div');
+    const resizeBottom = document.createElement('div');
+    const resizeBottomLeft = document.createElement('div');
+    const resizeBottomRight = document.createElement('div');
+    resizeTop.classList.add('resize-handle', 'top');
+    resizeTopLeft.classList.add('resize-handle', 'top-left');
+    resizeTopRight.classList.add('resize-handle', 'top-right');
+    resizeLeft.classList.add('resize-handle', 'left');
+    resizeRight.classList.add('resize-handle', 'right');
+    resizeBottom.classList.add('resize-handle', 'bottom');
+    resizeBottomLeft.classList.add('resize-handle', 'bottom-left');
+    resizeBottomRight.classList.add('resize-handle', 'bottom-right');
+    window.appendChild(resizeTop);
+    window.appendChild(resizeTopLeft);
+    window.appendChild(resizeTopRight);
+    window.appendChild(resizeLeft);
+    window.appendChild(resizeRight);
+    window.appendChild(resizeBottom);
+    window.appendChild(resizeBottomLeft);
+    window.appendChild(resizeBottomRight);
+    setupResizing(window);
+
+    function setupResizing(window) {
+        const handles = window.querySelectorAll('.resize-handle');
+        let startX, startY, startWidth, startHeight, startTop, startLeft;
+
+        handles.forEach(handle => {
+            handle.addEventListener('mousedown', initResize);
+
+            function initResize(e) {
+                e.preventDefault();
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseInt(document.defaultView.getComputedStyle(window).width, 10);
+                startHeight = parseInt(document.defaultView.getComputedStyle(window).height, 10);
+                startTop = parseInt(document.defaultView.getComputedStyle(window).top, 10);
+                startLeft = parseInt(document.defaultView.getComputedStyle(window).left, 10);
+
+                document.body.style.userSelect = 'none';
+
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+            }
+
+            function resize(e) {
+                if (handle.classList.contains('right') || handle.classList.contains('bottom-right') || handle.classList.contains('top-right')) {
+                    const width = startWidth + (e.clientX - startX);
+                    window.style.width = `${Math.max(400, width)}px`;
+                }
+                if (handle.classList.contains('bottom') || handle.classList.contains('bottom-right') || handle.classList.contains('bottom-left')) {
+                    const height = startHeight + (e.clientY - startY);
+                    window.style.height = `${Math.max(300, height)}px`;
+                }
+                if (handle.classList.contains('left') || handle.classList.contains('top-left') || handle.classList.contains('bottom-left')) {
+                    const width = startWidth - (e.clientX - startX);
+                    window.style.width = `${Math.max(400, width)}px`;
+                    (e.clientX - startX < 0) ? window.style.left = `${e.clientX}px` : window.style.left = `${startLeft - 1}px`;
+                }
+                if (handle.classList.contains('top') || handle.classList.contains('top-left') || handle.classList.contains('top-right')) {
+                    const height = startHeight - (e.clientY - startY);
+                    window.style.height = `${Math.max(300, height)}px`;
+                    if (e.clientY - startY < 0) window.style.top = `${e.clientY}px`;
+                }
+            }
+
+            function stopResize() {
+                delete document.body.style.userSelect;
+                document.removeEventListener('mousemove', resize);
+                document.removeEventListener('mouseup', stopResize);
+            }
+        });
+    }
+}
+
+function setWindowPosition(window) {
+    const main = document.getElementsByTagName('main')[0];
+    const x = main.offsetWidth - window.offsetWidth + 70;
+    const y = main.offsetHeight - window.offsetHeight - 70;
+    console.log(x, y);
+    window.style.left = `${x}px`;
+    window.style.top = `${y}px`;
+}
+
+function connectSocket() {
+    // eslint-disable-next-line no-undef
+    const socket = io();
+    socket.on('connect', () => {
+        console.log(socket);
+    });
+    socket.on('disconnect', () => {
+        console.log('Disconnected from server');
+    });
+    socket.on('welcome', (message) => {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageElement = document.createElement('p');
+        messageElement.innerText = message;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+    socket.on('error', (message) => {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageElement = document.createElement('p');
+        messageElement.innerText = message;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+    socket.on('message', (message) => {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageElement = document.createElement('p');
+        messageElement.classList.add('message');
+        messageElement.innerText = `${message.username}: ${message.content}`;
+        chatMessages.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    });
+    return socket;
 }

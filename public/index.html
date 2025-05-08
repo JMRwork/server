@@ -8,6 +8,7 @@
     <title>Engine CSS</title>
     <link rel="stylesheet" href="style/engineCSS.css">
     <script src="javascripts/engineCSS.js" defer></script>
+    <script src="/socket.io/socket.io.js" defer></script>
 </head>
 
 <body>
@@ -17,27 +18,18 @@
             <h1 class="logo">Navegador</h1>
             <ul>
                 <li><a href="/home" class="butaoTopo">Home</a></li>
-                <li><a href="/game" class="butaoTopo">Game</a></li>
+                <li><a href="/game" class="butaoTopo">Play</a></li>
                 <li><a href="/about" class="butaoTopo">About</a></li>
                 <li><a href="/login" class="butaoTopo">Login</a></li>
             </ul>
         </nav>
         <aside>
+            <ul></ul>
         </aside>
-        <main class="mainColor">
-
-            <form class="inputBox" action="/login" method="post">
-                <label for="username">username:</label>
-                <input type="text" name="username" id="username" placeholder="Username" required>
-                <br>
-                <label for="password">password:</label>
-                <input type="password" name="password" id="password" placeholder="Password" required>
-                <br>
-                <button type="button" id="submitBt">login</button>
-                <p id="register">New there? <a href="/register.html">register now!</a></p><br>
-                <a id="fgtPassword" href="#">forgot password?</a><br><br>
-                <p id="message"></p>
-            </form>
+        <main>
+            <div id="painel">
+                Hello this is home page
+            </div>
         </main>
         <footer>
             alright reserved

@@ -1,4 +1,5 @@
 const { loginService } = require('../services/auth');
+const { setSession } = require('../middleware/session');
 
 const login = async (req, res) => {
     try {
@@ -15,10 +16,8 @@ const login = async (req, res) => {
                     message: response.message
                 });
             } else {
-                req.session.id = response.id;
-                req.session.username = response.username;
-                res.cookie('u_on', true);
-                res.status(302).redirect('/home');
+                setSession(res, response.id, response.username);
+                res.status(302).redirect('/game');
             }
         }
     } catch (err) {
@@ -31,6 +30,7 @@ const login = async (req, res) => {
 
 const logout = (req, res) => {
     req.session = null;
+    res.clearCookie('token');
     res.clearCookie('u_on');
     res.status(200).redirect('/');
 };

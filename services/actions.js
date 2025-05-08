@@ -3,8 +3,8 @@ const { getActions, findLocalActions } = require('../repository/actions');
 
 async function getLocalActionsService(userId) {
     const location = await getLocationService(userId);
-    if (location.error) {
-        return { message: location.error };
+    if (location.message) {
+        return { message: location.message };
     }
     // Still only gathering actions for now
     const localActionsResponse = await findLocalActions(location);

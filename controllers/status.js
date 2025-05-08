@@ -1,8 +1,9 @@
 const { getStatusService, getLocationService, getInventoryCapService, getCurrencyService } = require('../services/status');
+const { verifySession } = require('../middleware/session');
 
 const getStatus = async (req, res) => {
     try {
-        const userId = req.session.id;
+        const userId = verifySession(req, res);
         if (userId) {
             // inventory: StackNull for (stackLimit - stackNull / stackLimit)
             const response = await getStatusService(userId);
@@ -22,7 +23,7 @@ const getStatus = async (req, res) => {
 
 const getLocation = async (req, res) => {
     try {
-        const userId = req.session.id;
+        const userId = verifySession(req, res);
         if (userId) {
             const response = await getLocationService(userId);
             res.status(200).json(response);
@@ -41,7 +42,7 @@ const getLocation = async (req, res) => {
 
 const getInventoryCap = async (req, res) => {
     try {
-        const userId = req.session.id;
+        const userId = verifySession(req, res);
         if (userId) {
             const response = await getInventoryCapService(userId);
             res.status(200).json(response);
@@ -60,7 +61,7 @@ const getInventoryCap = async (req, res) => {
 
 const getCurrency = async (req, res) => {
     try {
-        const userId = req.session.id;
+        const userId = verifySession(req, res);
         if (userId) {
             const response = await getCurrencyService(userId);
             res.status(200).json(response);

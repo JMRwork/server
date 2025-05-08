@@ -1,8 +1,10 @@
 const { getLocalActionsService } = require('../services/actions');
+const { verifySession } = require('../middleware/session');
 
 const getLocalActions = async (req, res) => {
     try {
-        const userId = req.session.id;
+        const userId = verifySession(req, res);
+        console.log(userId);
         if (userId) {
             const response = await getLocalActionsService(userId);
             if (response.message) {
